@@ -1,0 +1,13 @@
+name: PlayerStorageBox
+version: '1.1'
+main: top.newblock.playerStorageBox.PlayerStorageBox
+api-version: '1.21'
+authors: [ NewBlockTeam ]
+commands:
+  psb:
+    description: 打开个人仓库或管理查看他人仓库
+    usage: /psb [玩家名] [页码]
+permissions:
+  playerstoragebox.admin:
+    description: 允许查看和操作他人的物品箱
+    default: op
