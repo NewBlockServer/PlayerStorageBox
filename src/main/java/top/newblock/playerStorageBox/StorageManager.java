@@ -1,145 +1,145 @@
 package top.newblock.playerStorageBox;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class StorageManager {
 
     private final PlayerStorageBox plugin;
-    private final File oldFolder;
-
-    // 缓存正在操作的界面，Key: ownerUUID:page
-    private final Map<String, Inventory> activeInventories = new HashMap<>();
+    private final Gson gson = new Gson();
+    private final Map<UUID, Map<Integer, Inventory>> activeInventories = new HashMap<>();
 
     public StorageManager(PlayerStorageBox plugin) {
         this.plugin = plugin;
-        this.oldFolder = new File(plugin.getDataFolder(), "old");
-        if (!oldFolder.exists()) oldFolder.mkdirs();
     }
 
-    public void open(Player viewer, UUID ownerUUID, int page) {
-        String key = ownerUUID.toString() + ":" + page;
-        Inventory inv;
+    public void open(org.bukkit.entity.Player viewer, UUID ownerUUID, int page) {
+        // 如果缓存没有，则去数据库加载
+        Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(ownerUUID, k -> loadFromDatabase(ownerUUID));
 
-        if (activeInventories.containsKey(key)) {
-            inv = activeInventories.get(key);
-        } else {
-            // 【关键点】使用 StorageHolder 绑定这个界面的拥有者和页码
-            StorageHolder holder = new StorageHolder(ownerUUID, page);
-            String title = "§0物品箱        第" + page + "页";
-
-            // 创建时传入 holder
-            inv = Bukkit.createInventory(holder, 54, title);
-
-            Map<Integer, String> vaults = loadFromDb(ownerUUID);
-            String base64 = vaults.get(page);
-            if (base64 != null) {
-                try {
-                    inv.setContents(fromBase64(base64));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            activeInventories.put(key, inv);
+        // 获取对应页码，如果不存在则创建新页面
+        Inventory inv = pages.get(page);
+        if (inv == null) {
+            inv = Bukkit.createInventory(new StorageHolder(ownerUUID, page), 54, "仓库 - 第 " + page + " 页");
+            pages.put(page, inv);
         }
 
         viewer.openInventory(inv);
     }
 
-    // 实时保存
     public void saveSinglePage(UUID ownerUUID, int page, Inventory inv) {
-        try {
-            Map<Integer, String> vaults = loadFromDb(ownerUUID);
-            vaults.put(page, toBase64(inv.getContents()));
-            saveToDb(ownerUUID, vaults);
-        } catch (Exception e) {
-            plugin.getLogger().severe("保存失败: " + e.getMessage());
-        }
+        Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(ownerUUID, k -> loadFromDatabase(ownerUUID));
+        pages.put(page, inv);
+        saveToDatabase(ownerUUID, pages);
     }
 
-    // 当没有人看这个界面时，释放内存
     public void removeActiveIfEmpty(UUID ownerUUID, int page, Inventory inv) {
-        // getViewers().size() <= 1 是因为当前关闭的玩家还在列表里
-        if (inv.getViewers().size() <= 1) {
-            activeInventories.remove(ownerUUID.toString() + ":" + page);
+        // 这里可以根据需要添加从内存卸载的逻辑
+    }
+
+    private void saveToDatabase(UUID uuid, Map<Integer, Inventory> pages) {
+        try {
+            Map<Integer, String> serializedData = new HashMap<>();
+            for (Map.Entry<Integer, Inventory> entry : pages.entrySet()) {
+                serializedData.put(entry.getKey(), serialize(entry.getValue()));
+            }
+
+            String json = gson.toJson(serializedData);
+            try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
+                    "INSERT OR REPLACE INTO player_vaults (uuid, data) VALUES (?, ?)")) {
+                ps.setString(1, uuid.toString());
+                ps.setString(2, json);
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            plugin.getLogger().severe("保存玩家 " + uuid + " 数据时发生错误!");
+            e.printStackTrace();
         }
     }
 
-    public void saveAllAndClose() {
-        for (Map.Entry<String, Inventory> entry : activeInventories.entrySet()) {
-            String[] parts = entry.getKey().split(":");
-            saveSinglePage(UUID.fromString(parts[0]), Integer.parseInt(parts[1]), entry.getValue());
-        }
-    }
-
-    /* ================= 数据库与工具方法 (保持不变) ================= */
-
-    private synchronized Map<Integer, String> loadFromDb(UUID uuid) {
-        Map<Integer, String> map = new HashMap<>();
+    private Map<Integer, Inventory> loadFromDatabase(UUID uuid) {
+        Map<Integer, Inventory> pages = new HashMap<>();
         try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
-                "SELECT data FROM player_vaults WHERE uuid=?"
-        )) {
+                "SELECT data FROM player_vaults WHERE uuid = ?")) {
             ps.setString(1, uuid.toString());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                YamlConfiguration yml = new YamlConfiguration();
-                yml.loadFromString(rs.getString("data"));
-                for (String key : yml.getKeys(false)) {
-                    if (key.startsWith("vault")) {
-                        map.put(Integer.parseInt(key.replace("vault", "")), yml.getString(key));
+                String rawData = rs.getString("data");
+                if (rawData == null || rawData.isEmpty()) return pages;
+
+                // 判断是否是新版 JSON 格式
+                if (rawData.trim().startsWith("{")) {
+                    Map<Integer, String> serializedData = gson.fromJson(rawData, new TypeToken<Map<Integer, String>>() {}.getType());
+                    for (Map.Entry<Integer, String> entry : serializedData.entrySet()) {
+                        try {
+                            pages.put(entry.getKey(), deserialize(entry.getValue(), uuid, entry.getKey()));
+                        } catch (Exception e) {
+                            plugin.getLogger().severe("解析玩家 " + uuid + " 第 " + entry.getKey() + " 页数据失败！");
+                        }
+                    }
+                } else {
+                    // 旧版单页数据兼容处理
+                    try {
+                        Inventory oldInv = deserialize(rawData, uuid, 1);
+                        pages.put(1, oldInv);
+                        plugin.getLogger().info("已成功兼容并加载玩家 " + uuid + " 的旧版仓库数据。");
+                    } catch (Exception e) {
+                        plugin.getLogger().severe("解析玩家 " + uuid + " 的旧版数据失败！Base64 可能损坏。");
+                        e.printStackTrace();
                     }
                 }
             }
-        } catch (Exception ignored) {}
-        return map;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return pages;
     }
 
-    private synchronized void saveToDb(UUID uuid, Map<Integer, String> vaults) throws Exception {
-        YamlConfiguration yml = new YamlConfiguration();
-        for (Map.Entry<Integer, String> e : vaults.entrySet()) {
-            yml.set("vault" + e.getKey(), e.getValue());
-        }
-        try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
-                "INSERT INTO player_vaults(uuid, data) VALUES(?, ?) " +
-                        "ON CONFLICT(uuid) DO UPDATE SET data=excluded.data"
-        )) {
-            ps.setString(1, uuid.toString());
-            ps.setString(2, yml.saveToString());
-            ps.executeUpdate();
+    public void saveAllAndClose() {
+        for (Map.Entry<UUID, Map<Integer, Inventory>> entry : activeInventories.entrySet()) {
+            saveToDatabase(entry.getKey(), entry.getValue());
         }
     }
 
-    public void migrateOldData() {
-        // ...与上次相同，此处省略以节省空间...
-    }
-
-    private String toBase64(ItemStack[] items) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        BukkitObjectOutputStream out = new BukkitObjectOutputStream(baos);
-        out.writeInt(items.length);
-        for (ItemStack item : items) out.writeObject(item);
-        out.close();
-        return Base64.getEncoder().encodeToString(baos.toByteArray());
-    }
-
-    private ItemStack[] fromBase64(String base64) throws Exception {
-        byte[] bytes = Base64.getDecoder().decode(base64.replaceAll("\\s", ""));
-        BukkitObjectInputStream in = new BukkitObjectInputStream(new ByteArrayInputStream(bytes));
-        ItemStack[] items = new ItemStack[in.readInt()];
-        for (int i = 0; i < items.length; i++) {
-            items[i] = (ItemStack) in.readObject();
+    private String serialize(Inventory inv) throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
+        dataOutput.writeInt(inv.getSize());
+        for (int i = 0; i < inv.getSize(); i++) {
+            dataOutput.writeObject(inv.getItem(i));
         }
-        in.close();
-        return items;
+        dataOutput.close();
+        // 使用标准 Base64 (不带换行)
+        return Base64.getEncoder().encodeToString(outputStream.toByteArray());
+    }
+
+    private Inventory deserialize(String data, UUID owner, int page) throws Exception {
+        // 【关键修复】使用 getMimeDecoder 以兼容旧版 SnakeYAML 产生的带换行符的 Base64 字符串
+        byte[] bytes = Base64.getMimeDecoder().decode(data.replace("\r", "").replace("\n", ""));
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
+
+        int size = dataInput.readInt();
+        Inventory inv = Bukkit.createInventory(new StorageHolder(owner, page), size, "仓库 - 第 " + page + " 页");
+
+        for (int i = 0; i < size; i++) {
+            inv.setItem(i, (ItemStack) dataInput.readObject());
+        }
+        dataInput.close();
+        return inv;
     }
 }

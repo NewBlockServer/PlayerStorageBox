@@ -1,64 +1,99 @@
 package top.newblock.playerStorageBox;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.io.File;
 
 public final class PlayerStorageBox extends JavaPlugin {
 
     private StorageManager storageManager;
+    private FileConfiguration langConfig;
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
+        loadLangConfig();
+
         SQLiteManager.init(this);
         storageManager = new StorageManager(this);
 
-        storageManager.migrateOldData();
-
         getServer().getPluginManager().registerEvents(
-                new StorageListener(storageManager), this
+                new StorageListener(this, storageManager), this
         );
+
+        startBackupTask();
+        getLogger().info("PlayerStorageBox 已启用。");
     }
 
     @Override
     public void onDisable() {
-        storageManager.saveAllAndClose();
+        if (storageManager != null) {
+            storageManager.saveAllAndClose();
+        }
         SQLiteManager.close();
+    }
+
+    private void startBackupTask() {
+        int interval = getConfig().getInt("backup.interval", 30);
+        if (interval <= 0) return;
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String fileName = SQLiteManager.backup(PlayerStorageBox.this);
+                if (fileName != null) {
+                    getLogger().info("自动备份成功: " + fileName);
+                }
+            }
+        }.runTaskTimerAsynchronously(this, 20L * 60 * interval, 20L * 60 * interval);
+    }
+
+    public void loadLangConfig() {
+        File langFile = new File(getDataFolder(), "lang.yml");
+        if (!langFile.exists()) {
+            saveResource("lang.yml", false);
+        }
+        langConfig = YamlConfiguration.loadConfiguration(langFile);
+    }
+
+    public String getLang(String path) {
+        String msg = langConfig.getString(path, "Missing lang: " + path);
+        String prefix = getConfig().getString("prefix", "&6NewBlock&e>> ");
+        return ChatColor.translateAlternateColorCodes('&', prefix + msg);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) return true;
 
-        // /psb [页码] - 自己打开
-        // /psb <玩家名> [页码] - 管理员打开
-
         if (args.length == 0) {
             storageManager.open(player, player.getUniqueId(), 1);
             return true;
         }
 
-        // 尝试解析第一个参数
         String targetName = args[0];
-
-        // 如果第一个参数是数字，则是玩家自己想开某一页
         if (targetName.matches("\\d+")) {
             int page = Math.max(1, Integer.parseInt(targetName));
             storageManager.open(player, player.getUniqueId(), page);
             return true;
         }
 
-        // 否则视为查看他人
         if (!player.hasPermission("playerstoragebox.admin")) {
-            player.sendMessage("§c你没有权限查看他人的物品箱！");
+            player.sendMessage(getLang("no-permission-others"));
             return true;
         }
 
         Player target = Bukkit.getPlayer(targetName);
         if (target == null) {
-            player.sendMessage("§c目标玩家不在线，无法操作其仓库。");
+            player.sendMessage(getLang("player-offline"));
             return true;
         }
 

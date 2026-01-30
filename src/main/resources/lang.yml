@@ -1,0 +1,7 @@
+no-permission: "&c你没有权限执行此操作！"
+no-permission-others: "&c你没有权限查看他人的物品箱！"
+player-offline: "&c目标玩家不在线，无法操作其仓库。"
+blocked-item: "&c此物品无法放入物品箱！"
+vip-required: "&c第 3 页需要 VIP 会员才可使用！"
+mvp-required: "&c第 {page} 页需要 MVP 会员才可使用！"
+backup-success: "&a仓库数据备份成功: {file}"

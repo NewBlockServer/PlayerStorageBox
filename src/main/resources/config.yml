@@ -1,0 +1,17 @@
+# 插件前缀
+prefix: "&6NewBlock&7&o仓库 &e>> "
+
+# 自动备份设置
+backup:
+  # 自动备份间隔 (单位: 分钟)，设置为 -1 则禁用
+  interval: 30
+  # 最多保留的备份文件数量 (防止占用过多硬盘)
+  max-files: 50
+
+# 黑名单物品 (无法放入仓库)
+blocked-materials:
+  - GOLD_INGOT
+  - NETHER_STAR
+  - CHEST
+  - DIAMOND
+  - COMPASS
