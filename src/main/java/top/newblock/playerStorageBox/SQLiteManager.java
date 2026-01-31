@@ -1,7 +1,6 @@
 package top.newblock.playerStorageBox;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
@@ -16,49 +15,26 @@ public class SQLiteManager {
 
     public static void init(PlayerStorageBox plugin) {
         try {
-            if (!plugin.getDataFolder().exists()) plugin.getDataFolder().mkdirs();
             dbFile = new File(plugin.getDataFolder(), "storage.db");
-
+            if (!plugin.getDataFolder().exists()) plugin.getDataFolder().mkdirs();
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
-
             try (Statement st = connection.createStatement()) {
-                st.executeUpdate("""
-                    CREATE TABLE IF NOT EXISTS player_vaults (
-                        uuid TEXT PRIMARY KEY,
-                        data TEXT NOT NULL
-                    )
-                """);
+                st.executeUpdate("CREATE TABLE IF NOT EXISTS player_vaults (uuid TEXT PRIMARY KEY, data TEXT NOT NULL)");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     public static String backup(PlayerStorageBox plugin) {
-        if (dbFile == null || !dbFile.exists()) return null;
-
-        File backupFolder = new File(plugin.getDataFolder(), "backup");
-        if (!backupFolder.exists()) backupFolder.mkdirs();
-
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File backupFile = new File(backupFolder, "storage_backup_" + timeStamp + ".db");
-
         try {
-            Files.copy(dbFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return backupFile.getName();
-        } catch (IOException e) {
-            plugin.getLogger().warning("备份数据库失败: " + e.getMessage());
-            return null;
-        }
+            File folder = new File(plugin.getDataFolder(), "backup");
+            if (!folder.exists()) folder.mkdirs();
+            String time = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            File backFile = new File(folder, "storage_" + time + ".db");
+            Files.copy(dbFile.toPath(), backFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            return backFile.getName();
+        } catch (Exception e) { return null; }
     }
 
-    public static Connection get() {
-        return connection;
-    }
-
-    public static void close() {
-        try {
-            if (connection != null && !connection.isClosed()) connection.close();
-        } catch (Exception ignored) {}
-    }
+    public static Connection get() { return connection; }
+    public static void close() { try { if (connection != null) connection.close(); } catch (Exception ignored) {} }
 }

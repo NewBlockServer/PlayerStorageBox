@@ -3,8 +3,11 @@ package top.newblock.playerStorageBox;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 
@@ -12,10 +15,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class StorageManager {
 
@@ -23,123 +24,215 @@ public class StorageManager {
     private final Gson gson = new Gson();
     private final Map<UUID, Map<Integer, Inventory>> activeInventories = new HashMap<>();
 
-    public StorageManager(PlayerStorageBox plugin) {
-        this.plugin = plugin;
+    public StorageManager(PlayerStorageBox plugin) { this.plugin = plugin; }
+
+    /* ================= 匹配算法 (支持通配符 *) ================= */
+
+    private boolean isMatch(String text, String pattern) {
+        if (text == null) return false;
+        if (!pattern.contains("*")) return text.equals(pattern); // 无通配符时执行完整匹配
+
+        // 将通配符 * 转换为正则 .* 并转义其他正则特殊字符
+        String regex = Pattern.quote(pattern).replace("*", "\\E.*\\Q");
+        return text.matches(regex);
     }
 
-    public void open(org.bukkit.entity.Player viewer, UUID ownerUUID, int page) {
-        // 如果缓存没有，则去数据库加载
-        Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(ownerUUID, k -> loadFromDatabase(ownerUUID));
+    /* ================= 批量管理功能 ================= */
 
-        // 获取对应页码，如果不存在则创建新页面
+    public int bulkReplace(String mode, String oldText, String newText) throws Exception {
+        String oldTarget = ChatColor.translateAlternateColorCodes('&', oldText);
+        String newTarget = ChatColor.translateAlternateColorCodes('&', newText);
+        int count = 0;
+
+        try (PreparedStatement ps = SQLiteManager.get().prepareStatement("SELECT uuid, data FROM player_vaults")) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UUID uuid = UUID.fromString(rs.getString("uuid"));
+                Map<Integer, String> pageData = gson.fromJson(rs.getString("data"), new TypeToken<Map<Integer, String>>() {}.getType());
+                boolean modified = false;
+
+                for (Map.Entry<Integer, String> entry : pageData.entrySet()) {
+                    Inventory inv = deserialize(entry.getValue(), uuid, entry.getKey());
+                    boolean pageModified = false;
+
+                    for (ItemStack item : inv.getContents()) {
+                        if (item == null || !item.hasItemMeta()) continue;
+                        ItemMeta meta = item.getItemMeta();
+
+                        if (mode.equalsIgnoreCase("name")) {
+                            if (meta.hasDisplayName() && isMatch(meta.getDisplayName(), oldTarget)) {
+                                meta.setDisplayName(newTarget);
+                                item.setItemMeta(meta);
+                                pageModified = true; count++;
+                            }
+                        } else if (mode.equalsIgnoreCase("lore")) {
+                            if (meta.hasLore()) {
+                                List<String> lore = meta.getLore();
+                                boolean loreChanged = false;
+                                for (int i = 0; i < lore.size(); i++) {
+                                    if (isMatch(lore.get(i), oldTarget)) {
+                                        lore.set(i, newTarget);
+                                        loreChanged = true; count++;
+                                    }
+                                }
+                                if (loreChanged) {
+                                    meta.setLore(lore);
+                                    item.setItemMeta(meta);
+                                    pageModified = true;
+                                }
+                            }
+                        }
+                    }
+                    if (pageModified) { entry.setValue(serialize(inv)); modified = true; }
+                }
+                if (modified) saveRawDataToDB(uuid, pageData);
+            }
+        }
+        return count;
+    }
+
+    public int bulkDelete(String mode, String targetText) throws Exception {
+        String target = ChatColor.translateAlternateColorCodes('&', targetText);
+        int count = 0;
+
+        try (PreparedStatement ps = SQLiteManager.get().prepareStatement("SELECT uuid, data FROM player_vaults")) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UUID uuid = UUID.fromString(rs.getString("uuid"));
+                Map<Integer, String> pageData = gson.fromJson(rs.getString("data"), new TypeToken<Map<Integer, String>>() {}.getType());
+                boolean modified = false;
+
+                for (Map.Entry<Integer, String> entry : pageData.entrySet()) {
+                    Inventory inv = deserialize(entry.getValue(), uuid, entry.getKey());
+                    boolean pageModified = false;
+                    ItemStack[] contents = inv.getContents();
+
+                    for (int i = 0; i < contents.length; i++) {
+                        ItemStack item = contents[i];
+                        if (item == null || !item.hasItemMeta()) continue;
+                        ItemMeta meta = item.getItemMeta();
+
+                        boolean shouldDelete = false;
+                        if (mode.equalsIgnoreCase("name")) {
+                            if (meta.hasDisplayName() && isMatch(meta.getDisplayName(), target)) shouldDelete = true;
+                        } else if (mode.equalsIgnoreCase("lore")) {
+                            if (meta.hasLore()) {
+                                for (String line : meta.getLore()) {
+                                    if (isMatch(line, target)) { shouldDelete = true; break; }
+                                }
+                            }
+                        }
+
+                        if (shouldDelete) { inv.setItem(i, null); pageModified = true; count++; }
+                    }
+                    if (pageModified) { entry.setValue(serialize(inv)); modified = true; }
+                }
+                if (modified) saveRawDataToDB(uuid, pageData);
+            }
+        }
+        return count;
+    }
+
+    /* ================= 基础逻辑 & 序列化 (保持之前版本) ================= */
+
+    public void open(org.bukkit.entity.Player viewer, UUID ownerUUID, int page) {
+        Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(ownerUUID, this::loadFromDatabase);
         Inventory inv = pages.get(page);
         if (inv == null) {
-            inv = Bukkit.createInventory(new StorageHolder(ownerUUID, page), 54, "仓库 - 第 " + page + " 页");
+            inv = Bukkit.createInventory(new StorageHolder(ownerUUID, page), 54, "§0物品箱        第" + page + "页");
             pages.put(page, inv);
         }
-
         viewer.openInventory(inv);
     }
 
     public void saveSinglePage(UUID ownerUUID, int page, Inventory inv) {
-        Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(ownerUUID, k -> loadFromDatabase(ownerUUID));
+        Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(ownerUUID, this::loadFromDatabase);
         pages.put(page, inv);
         saveToDatabase(ownerUUID, pages);
     }
 
-    public void removeActiveIfEmpty(UUID ownerUUID, int page, Inventory inv) {
-        // 这里可以根据需要添加从内存卸载的逻辑
+    public void saveAllAndClose() {
+        for (Map.Entry<UUID, Map<Integer, Inventory>> entry : activeInventories.entrySet()) saveToDatabase(entry.getKey(), entry.getValue());
+    }
+
+    private void saveRawDataToDB(UUID uuid, Map<Integer, String> data) throws Exception {
+        try (PreparedStatement ps = SQLiteManager.get().prepareStatement("INSERT OR REPLACE INTO player_vaults(uuid, data) VALUES (?, ?)")) {
+            ps.setString(1, uuid.toString());
+            ps.setString(2, gson.toJson(data));
+            ps.executeUpdate();
+        }
     }
 
     private void saveToDatabase(UUID uuid, Map<Integer, Inventory> pages) {
         try {
-            Map<Integer, String> serializedData = new HashMap<>();
-            for (Map.Entry<Integer, Inventory> entry : pages.entrySet()) {
-                serializedData.put(entry.getKey(), serialize(entry.getValue()));
-            }
-
-            String json = gson.toJson(serializedData);
-            try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
-                    "INSERT OR REPLACE INTO player_vaults (uuid, data) VALUES (?, ?)")) {
-                ps.setString(1, uuid.toString());
-                ps.setString(2, json);
-                ps.executeUpdate();
-            }
-        } catch (Exception e) {
-            plugin.getLogger().severe("保存玩家 " + uuid + " 数据时发生错误!");
-            e.printStackTrace();
-        }
+            Map<Integer, String> data = new HashMap<>();
+            for (Map.Entry<Integer, Inventory> e : pages.entrySet()) data.put(e.getKey(), serialize(e.getValue()));
+            saveRawDataToDB(uuid, data);
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private Map<Integer, Inventory> loadFromDatabase(UUID uuid) {
         Map<Integer, Inventory> pages = new HashMap<>();
-        try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
-                "SELECT data FROM player_vaults WHERE uuid = ?")) {
+        try (PreparedStatement ps = SQLiteManager.get().prepareStatement("SELECT data FROM player_vaults WHERE uuid=?")) {
             ps.setString(1, uuid.toString());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                String rawData = rs.getString("data");
-                if (rawData == null || rawData.isEmpty()) return pages;
-
-                // 判断是否是新版 JSON 格式
-                if (rawData.trim().startsWith("{")) {
-                    Map<Integer, String> serializedData = gson.fromJson(rawData, new TypeToken<Map<Integer, String>>() {}.getType());
-                    for (Map.Entry<Integer, String> entry : serializedData.entrySet()) {
-                        try {
-                            pages.put(entry.getKey(), deserialize(entry.getValue(), uuid, entry.getKey()));
-                        } catch (Exception e) {
-                            plugin.getLogger().severe("解析玩家 " + uuid + " 第 " + entry.getKey() + " 页数据失败！");
-                        }
-                    }
-                } else {
-                    // 旧版单页数据兼容处理
-                    try {
-                        Inventory oldInv = deserialize(rawData, uuid, 1);
-                        pages.put(1, oldInv);
-                        plugin.getLogger().info("已成功兼容并加载玩家 " + uuid + " 的旧版仓库数据。");
-                    } catch (Exception e) {
-                        plugin.getLogger().severe("解析玩家 " + uuid + " 的旧版数据失败！Base64 可能损坏。");
-                        e.printStackTrace();
-                    }
-                }
+                Map<Integer, String> map = gson.fromJson(rs.getString("data"), new TypeToken<Map<Integer, String>>() {}.getType());
+                for (Map.Entry<Integer, String> e : map.entrySet()) pages.put(e.getKey(), deserialize(e.getValue(), uuid, e.getKey()));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
         return pages;
     }
 
-    public void saveAllAndClose() {
-        for (Map.Entry<UUID, Map<Integer, Inventory>> entry : activeInventories.entrySet()) {
-            saveToDatabase(entry.getKey(), entry.getValue());
-        }
-    }
-
     private String serialize(Inventory inv) throws Exception {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
-        dataOutput.writeInt(inv.getSize());
-        for (int i = 0; i < inv.getSize(); i++) {
-            dataOutput.writeObject(inv.getItem(i));
-        }
-        dataOutput.close();
-        // 使用标准 Base64 (不带换行)
-        return Base64.getEncoder().encodeToString(outputStream.toByteArray());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BukkitObjectOutputStream out = new BukkitObjectOutputStream(baos);
+        out.writeInt(inv.getSize());
+        for (int i = 0; i < inv.getSize(); i++) out.writeObject(inv.getItem(i));
+        out.close(); return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 
-    private Inventory deserialize(String data, UUID owner, int page) throws Exception {
-        // 【关键修复】使用 getMimeDecoder 以兼容旧版 SnakeYAML 产生的带换行符的 Base64 字符串
-        byte[] bytes = Base64.getMimeDecoder().decode(data.replace("\r", "").replace("\n", ""));
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-        BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
-
-        int size = dataInput.readInt();
-        Inventory inv = Bukkit.createInventory(new StorageHolder(owner, page), size, "仓库 - 第 " + page + " 页");
-
-        for (int i = 0; i < size; i++) {
-            inv.setItem(i, (ItemStack) dataInput.readObject());
-        }
-        dataInput.close();
-        return inv;
+    private Inventory deserialize(String base64, UUID owner, int page) throws Exception {
+        byte[] bytes = Base64.getDecoder().decode(base64.replaceAll("\\s", ""));
+        BukkitObjectInputStream in = new BukkitObjectInputStream(new ByteArrayInputStream(bytes));
+        int size = in.readInt();
+        Inventory inv = Bukkit.createInventory(new StorageHolder(owner, page), size, "§0物品箱        第" + page + "页");
+        for (int i = 0; i < size; i++) inv.setItem(i, (ItemStack) in.readObject());
+        in.close(); return inv;
     }
+
+    public List<SearchResult> searchItems(String type, String keyword) {
+        List<SearchResult> results = new ArrayList<>();
+        String query = ChatColor.translateAlternateColorCodes('&', keyword).toLowerCase();
+        try (PreparedStatement ps = SQLiteManager.get().prepareStatement("SELECT uuid, data FROM player_vaults")) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UUID uuid = UUID.fromString(rs.getString("uuid"));
+                Map<Integer, String> pageData = gson.fromJson(rs.getString("data"), new TypeToken<Map<Integer, String>>() {}.getType());
+                for (Map.Entry<Integer, String> entry : pageData.entrySet()) {
+                    try {
+                        Inventory inv = deserialize(entry.getValue(), uuid, entry.getKey());
+                        for (ItemStack item : inv.getContents()) {
+                            if (item == null || item.getType() == Material.AIR) continue;
+                            if (checkMatch(item, type, query)) results.add(new SearchResult(uuid, entry.getKey(), item.clone()));
+                        }
+                    } catch (Exception ignored) {}
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return results;
+    }
+
+    private boolean checkMatch(ItemStack item, String type, String query) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item.getType().name().toLowerCase().contains(query);
+        return switch (type.toLowerCase()) {
+            case "name" -> meta.hasDisplayName() && meta.getDisplayName().toLowerCase().contains(query);
+            case "lore" -> meta.hasLore() && meta.getLore().stream().anyMatch(l -> l.toLowerCase().contains(query));
+            case "data" -> meta.toString().toLowerCase().contains(query);
+            default -> false;
+        };
+    }
+
+    public record SearchResult(UUID owner, int page, ItemStack item) {}
 }
