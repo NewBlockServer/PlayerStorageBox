@@ -19,7 +19,11 @@ public class SQLiteManager {
             if (!plugin.getDataFolder().exists()) plugin.getDataFolder().mkdirs();
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
             try (Statement st = connection.createStatement()) {
-                st.executeUpdate("CREATE TABLE IF NOT EXISTS player_vaults (uuid TEXT PRIMARY KEY, data TEXT NOT NULL)");
+                // 使用 BIGINT 存储整数价值
+                st.executeUpdate("CREATE TABLE IF NOT EXISTS player_vaults (" +
+                        "uuid TEXT PRIMARY KEY, " +
+                        "data TEXT NOT NULL, " +
+                        "total_value BIGINT DEFAULT 0)");
             }
         } catch (Exception e) { e.printStackTrace(); }
     }

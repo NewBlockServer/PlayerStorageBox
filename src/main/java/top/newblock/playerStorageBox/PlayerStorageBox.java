@@ -1,10 +1,5 @@
 package top.newblock.playerStorageBox;
 
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -18,6 +13,11 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 
 import java.io.File;
 import java.util.*;
@@ -37,24 +37,23 @@ public final class PlayerStorageBox extends JavaPlugin implements TabCompleter {
         loadLangConfig();
         SQLiteManager.init(this);
         storageManager = new StorageManager(this);
+
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new StoragePlaceholder(this, storageManager).register();
+        }
+
         getCommand("psb").setExecutor(this);
         getCommand("psb").setTabCompleter(this);
         getServer().getPluginManager().registerEvents(new StorageListener(this, storageManager), this);
     }
 
-    /* ================= 参数解析引擎 (支持双引号) ================= */
-
     private String[] parseArgs(String label, String[] args) {
-        // 将原始参数合并成一个字符串
         String fullInput = String.join(" ", args);
         List<String> list = new ArrayList<>();
-        // 正则：匹配引号内的内容 OR 不含空格的单词
         Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(fullInput);
         while (m.find()) {
             String s = m.group(1);
-            if (s.startsWith("\"") && s.endsWith("\"")) {
-                s = s.substring(1, s.length() - 1);
-            }
+            if (s.startsWith("\"") && s.endsWith("\"")) s = s.substring(1, s.length() - 1);
             list.add(s);
         }
         return list.toArray(new String[0]);
@@ -63,12 +62,9 @@ public final class PlayerStorageBox extends JavaPlugin implements TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) { sendHelp(sender); return true; }
-
-        // 使用新解析引擎处理参数
         String[] smartArgs = parseArgs(label, args);
         String sub = smartArgs[0].toLowerCase();
 
-        // /psb open [页] [玩家]
         if (sub.equals("open") && sender instanceof Player p) {
             int page = (smartArgs.length > 1 && smartArgs[1].matches("\\d+")) ? Integer.parseInt(smartArgs[1]) : 1;
             UUID target = (smartArgs.length > 2 && p.hasPermission("playerstoragebox.admin")) ?
@@ -77,41 +73,42 @@ public final class PlayerStorageBox extends JavaPlugin implements TabCompleter {
             return true;
         }
 
+        if (sub.equals("reload") && sender.hasPermission("playerstoragebox.admin")) {
+            reloadConfig();
+            loadLangConfig();
+            storageManager.reloadPriceConfig();
+            sender.sendMessage("§a[√] 配置已重载。");
+            return true;
+        }
+
         if (!sender.hasPermission("playerstoragebox.admin")) { sender.sendMessage(getLang("no-permission")); return true; }
 
-        // /psb replace <name|lore> "旧文本" "新文本"
         if (sub.equals("replace")) {
-            if (smartArgs.length < 4) { sender.sendMessage("§c用法: /psb replace <name|lore> \"旧文本\" \"新文本\""); return true; }
-            sender.sendMessage("§e[!] 正在处理批量替换 (支持通配符 *)...");
+            if (smartArgs.length < 4) { sender.sendMessage("§c用法: /psb replace <name|lore> \"旧\" \"新\""); return true; }
             new BukkitRunnable() {
-                @Override
-                public void run() {
+                @Override public void run() {
                     try {
                         int count = storageManager.bulkReplace(smartArgs[1], smartArgs[2], smartArgs[3]);
-                        sender.sendMessage("§a[√] 完成！修改了 §f" + count + " §a处。");
-                    } catch (Exception e) { sender.sendMessage("§c[×] 错误: " + e.getMessage()); }
+                        sender.sendMessage("§a[√] 完成！修改了 " + count + " 处。已重算缓存值。");
+                    } catch (Exception e) { sender.sendMessage("§c错误: " + e.getMessage()); }
                 }
             }.runTaskAsynchronously(this);
             return true;
         }
 
-        // /psb delete <name|lore> "目标文本"
         if (sub.equals("delete")) {
-            if (smartArgs.length < 3) { sender.sendMessage("§c用法: /psb delete <name|lore> \"目标内容\""); return true; }
-            sender.sendMessage("§e[!] 正在处理批量删除 (支持通配符 *)...");
+            if (smartArgs.length < 3) { sender.sendMessage("§c用法: /psb delete <name|lore> \"内容\""); return true; }
             new BukkitRunnable() {
-                @Override
-                public void run() {
+                @Override public void run() {
                     try {
                         int count = storageManager.bulkDelete(smartArgs[1], smartArgs[2]);
-                        sender.sendMessage("§a[√] 完成！删除了 §f" + count + " §a个匹配物品。");
-                    } catch (Exception e) { sender.sendMessage("§c[×] 错误: " + e.getMessage()); }
+                        sender.sendMessage("§a[√] 完成！删除了 " + count + " 个物品。已重算缓存值。");
+                    } catch (Exception e) { sender.sendMessage("§c错误: " + e.getMessage()); }
                 }
             }.runTaskAsynchronously(this);
             return true;
         }
 
-        // search, backup 逻辑保持不变...
         if (sub.equals("search") && sender instanceof Player p) {
             if (smartArgs.length < 3) { p.sendMessage("§c用法: /psb search <name|lore|data> <关键词>"); return true; }
             handleSearch(p, smartArgs[1], smartArgs[2]);
@@ -134,12 +131,9 @@ public final class PlayerStorageBox extends JavaPlugin implements TabCompleter {
         return true;
     }
 
-    /* ================= 辅助显示方法 (保持之前版本) ================= */
-
     private void handleSearch(Player p, String type, String keyword) {
         new BukkitRunnable() {
-            @Override
-            public void run() {
+            @Override public void run() {
                 List<StorageManager.SearchResult> res = storageManager.searchItems(type, keyword);
                 SearchSession session = new SearchSession(type, keyword, res);
                 searchCache.put(p.getUniqueId(), session);
@@ -199,11 +193,11 @@ public final class PlayerStorageBox extends JavaPlugin implements TabCompleter {
     private void sendHelp(CommandSender sender) {
         sender.sendMessage("§6§l--- PlayerStorageBox 管理帮助 ---");
         sender.sendMessage("§e/psb open [页] [玩家] §7- 打开仓库");
+        sender.sendMessage("§a/psb reload §7- 重载配置");
         if (sender.hasPermission("playerstoragebox.admin")) {
             sender.sendMessage("§e/psb search <name|lore|data> <关键词> §7- 搜索");
             sender.sendMessage("§b/psb replace <name|lore> \"旧\" \"新\" §7- 批量替换");
             sender.sendMessage("§c/psb delete <name|lore> \"内容\" §7- 批量删除");
-            sender.sendMessage("§7(支持双引号包裹空格及 * 通配符)");
         }
     }
 
@@ -228,7 +222,7 @@ public final class PlayerStorageBox extends JavaPlugin implements TabCompleter {
     public void loadLangConfig() { File f = new File(getDataFolder(), "lang.yml"); if (!f.exists()) saveResource("lang.yml", false); langConfig = YamlConfiguration.loadConfiguration(f); }
     public String getLang(String p) { return ChatColor.translateAlternateColorCodes('&', getConfig().getString("prefix", "&6NewBlock&e>> ") + langConfig.getString(p, p)); }
     @Override public List<String> onTabComplete(CommandSender s, Command c, String a, String[] args) {
-        if (args.length == 1) return Arrays.asList("open", "search", "replace", "delete", "backup").stream().filter(i -> i.startsWith(args[0])).collect(Collectors.toList());
+        if (args.length == 1) return Arrays.asList("open", "search", "replace", "delete", "backup", "reload").stream().filter(i -> i.startsWith(args[0])).collect(Collectors.toList());
         if (args.length == 2 && (args[0].equalsIgnoreCase("search") || args[0].equalsIgnoreCase("replace") || args[0].equalsIgnoreCase("delete"))) return Arrays.asList("name", "lore", "data").stream().filter(i -> i.startsWith(args[1])).collect(Collectors.toList());
         return Collections.emptyList();
     }
