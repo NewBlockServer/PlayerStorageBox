@@ -5,7 +5,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class StoragePlaceholder extends PlaceholderExpansion {
-
     private final PlayerStorageBox plugin;
     private final StorageManager manager;
 
@@ -13,29 +12,15 @@ public class StoragePlaceholder extends PlaceholderExpansion {
         this.plugin = plugin;
         this.manager = manager;
     }
-
-    @Override
-    public @NotNull String getIdentifier() { return "playerstoragebox"; }
-
-    @Override
-    public @NotNull String getAuthor() { return "newblock"; }
-
-    @Override
-    public @NotNull String getVersion() { return "1.1.0"; }
-
-    @Override
-    public boolean persist() { return true; }
-
-    @Override
-    public String onPlaceholderRequest(Player player, @NotNull String params) {
+    @Override public @NotNull String getIdentifier() { return "playerstoragebox"; }
+    @Override public @NotNull String getAuthor() { return "newblock"; }
+    @Override public @NotNull String getVersion() { return "1.1.0"; }
+    @Override public boolean persist() { return true; }
+    @Override public String onPlaceholderRequest(Player player, @NotNull String params) {
         if (player == null) return "0";
-
-        // %playerstoragebox_total_value%
         if (params.equalsIgnoreCase("total_value")) {
-            // 直接返回 long，不会产生小数点
             return String.valueOf(manager.getTotalValue(player.getUniqueId()));
         }
-
         return null;
     }
 }

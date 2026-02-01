@@ -1,13 +1,34 @@
-# 价格配置文件
 prices:
-  # 按照物品显示名匹配 (支持颜色代码)
-  name:
-    "&6神剑": 100000
-  # 按照 Lore 关键词匹配 (包含该字符串即计算价值)
   lore:
-    "&c伤害 III": 50000
-    "&e伤害 II": 20000
-    "&a伤害 I": 3000
-    "&c耐久 III": 20000
-    "&e耐久 II": 7000
-    "&a耐久 I": 2000
+    "&a伤害 I": 100
+    "&e伤害 II": 100
+    "&c伤害 III": 100
+    "&a伤害 I": 100
+    "&e伤害 II": 100
+    "&c伤害 III": 100
+    "&a伤害 I": 100
+    "&e伤害 II": 100
+    "&c伤害 III": 100
+    "&a伤害 I": 100
+    "&e伤害 II": 100
+    "&c伤害 III": 100
+    "&a伤害 I": 100
+    "&e伤害 II": 100
+    "&c伤害 III": 100
+  name:
+    "&c火焰剑": 500
+
+combinations:
+  combo_fire_set:
+    # 必须包含以下所有 Lore (部分匹配即可，只要这行文字存在于 Lore 中)
+    required-lore:
+      - "测试1 III"
+      - "测试2 III"
+    # 满足上述 Lore 后，基础价值乘以这个数
+    lore-multiplier: 2.0
+
+    # [可选] 必须叫这个名字
+    required-name: "&c火焰剑"
+    # 如果 Lore 满足 且 名字也满足，在 lore-multiplier 的基础上再乘以这个数
+    # 最终倍率 = 1.5 * 2.0 = 3.0
+    name-multiplier: 2.0

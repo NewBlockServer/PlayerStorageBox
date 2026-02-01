@@ -8,7 +8,6 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -48,7 +47,6 @@ public class StorageListener implements Listener {
         event.setCancelled(true);
 
         if (event.getClickedInventory() != null && event.getClickedInventory().equals(player.getInventory())) {
-            // 权限检查
             int page = holder.getPage();
             if (page >= 3) {
                 if (page == 3 && !player.hasPermission("group.vip") && !player.hasPermission("group.mvp") && !player.hasPermission("playerstoragebox.admin")) {
@@ -70,7 +68,6 @@ public class StorageListener implements Listener {
             event.getClickedInventory().setItem(event.getSlot(), null);
         }
         sortInventory(topInv);
-        // 此处通过保存操作触发缓存价值计算
         manager.saveSinglePage(holder.getOwnerUUID(), holder.getPage(), topInv);
     }
 

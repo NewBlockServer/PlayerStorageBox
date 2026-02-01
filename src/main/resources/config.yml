@@ -1,12 +1,6 @@
 # 插件前缀
 prefix: "&6NewBlock&7&o仓库 &e>> "
 
-# 自动备份设置
-backup:
-  # 自动备份间隔 (单位: 分钟)，设置为 -1 则禁用
-  interval: 30
-  # 最多保留的备份文件数量 (防止占用过多硬盘)
-  max-files: 12
 
 # 黑名单物品 (无法放入仓库)
 blocked-materials:
@@ -15,3 +9,8 @@ blocked-materials:
   - CHEST
   - DIAMOND
   - COMPASS
+backup:
+  # 是否开启自动备份
+  enabled: true
+  # 备份间隔 (分钟)
+  interval: 60

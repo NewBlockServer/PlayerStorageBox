@@ -5,7 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -14,7 +14,6 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
@@ -23,63 +22,25 @@ import java.util.regex.Pattern;
 public class StorageManager {
 
     private final PlayerStorageBox plugin;
+    private final PriceCalculator priceCalculator;
     private final Gson gson = new Gson();
     private final Map<UUID, Map<Integer, Inventory>> activeInventories = new HashMap<>();
-    private YamlConfiguration priceConfig;
 
-    public StorageManager(PlayerStorageBox plugin) {
+    public StorageManager(PlayerStorageBox plugin, PriceCalculator priceCalculator) {
         this.plugin = plugin;
-        reloadPriceConfig();
+        this.priceCalculator = priceCalculator;
     }
-
-    public void reloadPriceConfig() {
-        File file = new File(plugin.getDataFolder(), "prices.yml");
-        if (!file.exists()) plugin.saveResource("prices.yml", false);
-        this.priceConfig = YamlConfiguration.loadConfiguration(file);
-    }
-
-    /* ================= 价值计算逻辑 (改为 long) ================= */
 
     public long calculateInventoryValue(Collection<Inventory> inventories) {
         long total = 0;
-        Map<String, Object> namePrices = priceConfig.getConfigurationSection("prices.name") != null ?
-                priceConfig.getConfigurationSection("prices.name").getValues(false) : new HashMap<>();
-        Map<String, Object> lorePrices = priceConfig.getConfigurationSection("prices.lore") != null ?
-                priceConfig.getConfigurationSection("prices.lore").getValues(false) : new HashMap<>();
-
         for (Inventory inv : inventories) {
             for (ItemStack item : inv.getContents()) {
                 if (item == null || item.getType() == Material.AIR) continue;
-                total += getItemValue(item, namePrices, lorePrices) * item.getAmount();
+                total += priceCalculator.calculateItemValue(item) * item.getAmount();
             }
         }
         return total;
     }
-
-    private long getItemValue(ItemStack item, Map<String, Object> namePrices, Map<String, Object> lorePrices) {
-        if (!item.hasItemMeta()) return 0;
-        ItemMeta meta = item.getItemMeta();
-
-        if (meta.hasDisplayName()) {
-            String displayName = meta.getDisplayName();
-            for (Map.Entry<String, Object> entry : namePrices.entrySet()) {
-                String target = ChatColor.translateAlternateColorCodes('&', entry.getKey());
-                if (displayName.equals(target)) return Long.parseLong(entry.getValue().toString());
-            }
-        }
-
-        if (meta.hasLore()) {
-            for (String line : meta.getLore()) {
-                for (Map.Entry<String, Object> entry : lorePrices.entrySet()) {
-                    String target = ChatColor.translateAlternateColorCodes('&', entry.getKey());
-                    if (line.contains(target)) return Long.parseLong(entry.getValue().toString());
-                }
-            }
-        }
-        return 0;
-    }
-
-    /* ================= 数据库操作 ================= */
 
     public long getCachedValue(UUID uuid) {
         try (PreparedStatement ps = SQLiteManager.get().prepareStatement("SELECT total_value FROM player_vaults WHERE uuid=?")) {
@@ -130,9 +91,7 @@ public class StorageManager {
         return getCachedValue(uuid);
     }
 
-    /* ================= 基础逻辑 ================= */
-
-    public void open(org.bukkit.entity.Player viewer, UUID ownerUUID, int page) {
+    public void open(Player viewer, UUID ownerUUID, int page) {
         Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(ownerUUID, this::loadFromDatabase);
         Inventory inv = pages.get(page);
         if (inv == null) {
@@ -152,6 +111,7 @@ public class StorageManager {
         for (Map.Entry<UUID, Map<Integer, Inventory>> entry : activeInventories.entrySet()) {
             saveToDatabase(entry.getKey(), entry.getValue());
         }
+        activeInventories.clear();
     }
 
     private String serialize(Inventory inv) throws Exception {
