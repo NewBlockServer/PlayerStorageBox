@@ -149,7 +149,6 @@ public class StorageManager {
                 Map<Integer, String> pageData = gson.fromJson(rs.getString("data"), new TypeToken<Map<Integer, String>>() {}.getType());
                 boolean modified = false;
                 List<Inventory> currentVaultItems = new ArrayList<>();
-
                 for (Map.Entry<Integer, String> entry : pageData.entrySet()) {
                     Inventory inv = deserialize(entry.getValue(), uuid, entry.getKey());
                     boolean pageModified = false;
@@ -195,7 +194,6 @@ public class StorageManager {
                 Map<Integer, String> pageData = gson.fromJson(rs.getString("data"), new TypeToken<Map<Integer, String>>() {}.getType());
                 boolean modified = false;
                 List<Inventory> currentVaultItems = new ArrayList<>();
-
                 for (Map.Entry<Integer, String> entry : pageData.entrySet()) {
                     Inventory inv = deserialize(entry.getValue(), uuid, entry.getKey());
                     boolean pageModified = false;

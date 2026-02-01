@@ -21,73 +21,43 @@ public class SQLiteManager {
             dbFile = new File(plugin.getDataFolder(), "storage.db");
             if (!plugin.getDataFolder().exists()) plugin.getDataFolder().mkdirs();
 
-            try {
-                Class.forName("org.sqlite.JDBC");
-            } catch (ClassNotFoundException e) {
-                // 忽略
-            }
+            try { Class.forName("org.sqlite.JDBC"); } catch (ClassNotFoundException ignored) {}
 
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
             try (Statement st = connection.createStatement()) {
-                // 1. 创建表（如果不存在）
-                st.executeUpdate("CREATE TABLE IF NOT EXISTS player_vaults (" +
-                        "uuid TEXT PRIMARY KEY, " +
-                        "data TEXT NOT NULL)"); // 先创建基础表
-
-                // 2. 检查并更新表结构 (修复 missing column error)
+                st.executeUpdate("CREATE TABLE IF NOT EXISTS player_vaults (uuid TEXT PRIMARY KEY, data TEXT NOT NULL)");
                 updateSchema(st);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            plugin.getLogger().severe("无法初始化数据库！");
+            plugin.getLogger().severe("数据库初始化失败！");
         }
     }
 
     private static void updateSchema(Statement st) {
         try {
-            // 检查 total_value 列是否存在
             boolean hasTotalValue = false;
             try (ResultSet rs = connection.getMetaData().getColumns(null, null, "player_vaults", "total_value")) {
                 if (rs.next()) hasTotalValue = true;
             }
-
-            // 如果不存在，则添加该列
             if (!hasTotalValue) {
-                pluginInstance.getLogger().info("正在更新数据库结构: 添加 total_value 列...");
+                pluginInstance.getLogger().info("更新数据库: 添加 total_value 列...");
                 st.executeUpdate("ALTER TABLE player_vaults ADD COLUMN total_value BIGINT DEFAULT 0");
-                pluginInstance.getLogger().info("数据库更新完成。");
             }
-        } catch (Exception e) {
-            pluginInstance.getLogger().warning("检查数据库结构时出错: " + e.getMessage());
-        }
+        } catch (Exception e) { pluginInstance.getLogger().warning("数据库结构检查失败: " + e.getMessage()); }
     }
 
     public static String backup(PlayerStorageBox plugin) {
         try {
             File folder = new File(plugin.getDataFolder(), "backup");
-            if (!folder.exists()) {
-                folder.mkdirs();
-            }
-
+            if (!folder.exists()) folder.mkdirs();
             String time = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
             File backFile = new File(folder, "storage_" + time + ".db");
-
             Files.copy(dbFile.toPath(), backFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
             return backFile.getName();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        } catch (Exception e) { e.printStackTrace(); return null; }
     }
 
     public static Connection get() { return connection; }
-
-    public static void close() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (Exception ignored) {}
-    }
+    public static void close() { try { if (connection != null && !connection.isClosed()) connection.close(); } catch (Exception ignored) {} }
 }

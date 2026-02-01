@@ -20,8 +20,11 @@ public final class PlayerStorageBox extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
         loadLangConfig();
-        SQLiteManager.init(this); // 这里会触发数据库更新
+        SQLiteManager.init(this);
+
+        // 初始化计算器
         priceCalculator = new PriceCalculator(this);
+        // 初始化仓库管理器
         storageManager = new StorageManager(this, priceCalculator);
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
