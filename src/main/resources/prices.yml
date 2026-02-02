@@ -1,537 +1,450 @@
 prices:
   lore:
-    "&a伤害 I": 50
-    "&e伤害 II": 50
-    "&c伤害 III": 50
-    "&a伤害穿透 I": 40
-    "&e伤害穿透 II": 60
-    "&c伤害穿透 III": 80
-    "&a配件槽 I": 60
-    "&e配件槽 II": 80
-    "&c配件槽 III": 150
-    "&6耐久 I": 80
-    "&6耐久 II": 100
-    "&6耐久 III": 130
-    "&c冲击 I": 80
-    "&c冲击 II": 200
-    "&6冲击 I": 80
-    "&6冲击 II": 200
-    "&a弹道稳定 I": 50
-    "&e弹道稳定 II": 60
-    "&c弹道稳定 III": 70
-    "&a箭矢速度 I": 50
-    "&e箭矢速度 II": 60
-    "&c箭矢速度 III": 70
-    "&a弹射物保护 I": 50
-    "&e弹射物保护 II": 70
-    "&c弹射物保护 III": 110
-    "&a抵抗 I": 50
-    "&e抵抗 II": 70
-    "&c抵抗 III": 110
-    "&a战斗保护 I": 50
-    "&e战斗保护 II": 80
-    "&c战斗保护 III": 120
-    "&a装备耐久 I": 50
-    "&e装备耐久 II": 70
-    "&c装备耐久 III": 100
-    "&a保护 I": 25
-    "&e保护 II": 35
-    "&c保护 III": 55
-    "&a破甲射击 I": 50
-    "&e破甲射击 II": 60
-    "&c破甲射击 III": 100
-    "&a武器耐久 I": 50
-    "&e武器耐久 II": 60
-    "&c武器耐久 III": 100
-    "&a强弓射击 I": 50
-    "&e强弓射击 II": 60
-    "&c强弓射击 III": 100
-    "&a精准射击 I": 50
-    "&e精准射击 II": 60
-    "&c精准射击 III": 100
-    "&a受击加速 I": 40
-    "&e受击加速 II": 50
-    "&c受击加速 III": 80
-    "&a爆炸保护 I": 40
-    "&e爆炸保护 II": 50
-    "&c爆炸保护 III": 80
-    "&a缓慢附加 I": 40
-    "&e缓慢附加 II": 50
-    "&c缓慢附加 III": 80
-    "&a摔落缓冲 I": 40
-    "&e摔落缓冲 II": 50
-    "&c摔落缓冲 III": 80
-    "&a击退 I": 60
-    "&e击退 II": 80
-    "&c击退 III": 120
-    "&a火焰保护 I": 40
-    "&e火焰保护 II": 50
-    "&c火焰保护 III": 80
-    "&a弹射物闪避 I": 80
-    "&e弹射物闪避 II": 100
-    "&c弹射物闪避 III": 180
-    "*&f&o*": -60
-    "*&d&o*": -80
-    "*&4&o*": -100
+    "&a伤害 I": 500
+    "&e伤害 II": 800
+    "&c伤害 III": 1600
+    "&a配件槽 I": 500
+    "&e配件槽 II": 900
+    "&c配件槽 III": 1600
+    "&6耐久 I": 600
+    "&6耐久 II": 1000
+    "&6耐久 III": 2000
+    "&c冲击 I": 800
+    "&c冲击 II": 2000
+    "&6冲击 I": 800
+    "&6冲击 II": 2000
+    "&a弹道稳定 I": 500
+    "&e弹道稳定 II": 800
+    "&c弹道稳定 III": 1000
+    "&a箭矢速度 I": 500
+    "&e箭矢速度 II": 800
+    "&c箭矢速度 III": 1000
+    "&a弹射物保护 I": 800
+    "&e弹射物保护 II": 1000
+    "&c弹射物保护 III": 160
+    "&a抵抗 I": 1000
+    "&e抵抗 II": 1200
+    "&c抵抗 III": 1800
+    "&a战斗保护 I": 800
+    "&e战斗保护 II": 1000
+    "&c战斗保护 III": 1800
+    "&a装备耐久 I": 800
+    "&e装备耐久 II": 1000
+    "&c装备耐久 III": 1800
+    "&a保护 I": 600
+    "&e保护 II": 800
+    "&c保护 III": 1200
+    "&a破甲射击 I": 800
+    "&e破甲射击 II": 1000
+    "&c破甲射击 III": 1800
+    "&a武器耐久 I": 500
+    "&e武器耐久 II": 600
+    "&c武器耐久 III": 1000
+    "&a强弓射击 I": 600
+    "&e强弓射击 II": 800
+    "&c强弓射击 III": 1800
+    "&a精准射击 I": 600
+    "&e精准射击 II": 800
+    "&c精准射击 III": 1800
+    "&a受击加速 I": 600
+    "&e受击加速 II": 800
+    "&c受击加速 III": 1200
+    "&a爆炸保护 I": 600
+    "&e爆炸保护 II": 800
+    "&c爆炸保护 III": 1000
+    "&a缓慢附加 I": 600
+    "&e缓慢附加 II": 800
+    "&c缓慢附加 III": 1000
+    "&a摔落缓冲 I": 800
+    "&e摔落缓冲 II": 1000
+    "&c摔落缓冲 III": 1400
+    "&a击退 I": 800
+    "&e击退 II": 1000
+    "&c击退 III": 1400
+    "&a火焰保护 I": 800
+    "&e火焰保护 II": 1000
+    "&c火焰保护 III": 1600
+    "&a弹射物闪避 I": 600
+    "&e弹射物闪避 II": 1000
+    "&c弹射物闪避 III": 2000
+    "*&f&o*": -500
+    "*&d&o*": -600
+    "*&4&o*": -1000
+    "&b组件*": 100
+
 
   name:
-    "*竞技复合弓": 30
-    "*银月长弓": 150
-    "*战术特种弓": 200
-    "*黯月长弓": 200
-    "*狩龙大弓": 150
+    "*竞技复合弓": 600
+    "*银月长弓": 600
+    "*战术特种弓": 600
+    "*黯月长弓": 600
+    "*狩龙大弓": 600
+    "*末影珍珠":400
+    "*生命图腾":1000
+    "*钻石头盔":800
+    "*钻石胸甲":1200
+    "*钻石护腿":1000
+    "*钻石靴子":1200
+    "*再生激素注射器":500
+    "*肾上腺素":500
+    "*木刀": 1000
+    "*下届合金头盔": 4000
+    "*下届合金胸甲": 8000
+    "*下届合金护腿": 6000
+    "*下届合金战靴": 7000
+    "*下届合金剑": 3000
+    "*虚空大剑": 10000
+    "&a&l幸运药水": 3000
+    "*背包": 1000
+    "*箭袋": 200
+    "*钻石剑": 500
+    "*金苹果": 1200
+    "*拆解器": 6000
+    "*箭": 500
+    "*牛肉罐头": 100
+    "*土豆罐头": 50
+    "*胡萝卜罐头": 80
+    "*熟只因肉": 80
+    "*苹果罐头": 80
+    "*曲奇饼干": 50
+    "*过期的肉罐头": 50
+    "*强化*": 1000
+
+
+
 
 combinations:
-  # ==============================
-  # 组合系列 1: 伤害 + 配件槽
-  # ==============================
-
-  # 1. 伤害I + 配件槽I (原 1_1, 2_1, 3_1)
-  combo_dmg1_slot1:
+  # ==========================================
+  # 【全局配置】名字加成 (适用于所有物品)
+  # ==========================================
+  global_name_settings:
     required-lore:
-      - "&a伤害 I"
-      - "&a配件槽 I"
-    lore-multiplier: 1.3
-    name-multipliers:
-      "*竞技复合弓": 1.0
-      "*银月长弓": 1.2
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.2
-      "*狩龙大弓*": 1.2
+      - "*"
+    name-settings:
+      "*竞技复合弓*":
+        multiplier: 1.2
+        value: 0
+      "*银月长弓*":
+        multiplier: 1.4
+        value: 0
+      "*战术特种弓*":
+        multiplier: 1.6
+        value: 0
+      "*黯月长弓*":
+        multiplier: 1.6
+        value: 0
+      "*狩龙大弓*":
+        multiplier: 1.4
+        value: 0
+      "*模块*":
+        multiplier: 1.0
+        value: 200
+      "*外骨骼*":
+        multiplier: 1.0
+        value: 200
 
-  # 2. 伤害II + 配件槽I (原 1_2, 2_2, 3_2)
-  combo_dmg2_slot1:
-    required-lore:
-      - "&e伤害 II"
-      - "&a配件槽 I"
-    lore-multiplier: 1.4
-    name-multipliers:
-      "*竞技复合弓": 1.0
-      "*银月长弓": 1.2
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.2
-      "*狩龙大弓*": 1.2
-
-  # 3. 伤害III + 配件槽I (原 1_3, 2_3, 3_3)
-  combo_dmg3_slot1:
-    required-lore:
-      - "&c伤害 III"
-      - "&a配件槽 I"
-    lore-multiplier: 1.5
-    name-multipliers:
-      "*竞技复合弓": 1.0
-      "*银月长弓": 1.2
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.2
-      "*狩龙大弓*": 1.2
-
-  # 4. 伤害I + 配件槽II (原 1_4, 2_4, 3_4)
-  combo_dmg1_slot2:
-    required-lore:
-      - "&a伤害 I"
-      - "&e配件槽 II"
-    lore-multiplier: 1.5
-    name-multipliers:
-      "*竞技复合弓": 1.0
-      "*银月长弓": 1.2
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.2
-      "*狩龙大弓*": 1.2
-
-  # 5. 伤害II + 配件槽II (原 1_5, 2_5, 3_5)
-  combo_dmg2_slot2:
-    required-lore:
-      - "&e伤害 II"
-      - "&e配件槽 II"
-    lore-multiplier: 1.6
-    name-multipliers:
-      "*竞技复合弓": 1.0
-      "*银月长弓": 1.2
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.2
-      "*狩龙大弓*": 1.2
-  # 6. 伤害III + 配件槽II (原 1_6, 2_6, 3_6)
-  combo_dmg3_slot2:
-    required-lore:
-      - "&c伤害 III"
-      - "&e配件槽 II"
-    lore-multiplier: 1.7
-    name-multipliers:
-      "*竞技复合弓": 1.0
-      "*银月长弓": 1.2
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.2
-      "*狩龙大弓*": 1.2
-
-  # 7. 伤害I + 配件槽III (原 1_7, 2_7, 3_7)
-  combo_dmg1_slot3:
-    required-lore:
-      - "&a伤害 I"
-      - "&c配件槽 III"
-    lore-multiplier: 1.7
-    name-multipliers:
-      "*竞技复合弓": 1.0
-      "*银月长弓": 1.2
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.2
-      "*狩龙大弓*": 1.2
-
-  # 8. 伤害II + 配件槽III (原 1_8, 2_8, 3_8)
-  # 注意：此处竞技和银月是 2.0 倍，战术是 1.0 倍
-  combo_dmg2_slot3:
-    required-lore:
-      - "&e伤害 II"
-      - "&c配件槽 III"
-    lore-multiplier: 1.8
-    name-multipliers:
-      "*竞技复合弓": 1.0
-      "*银月长弓": 1.2
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.2
-      "*狩龙大弓*": 1.2
-
-  # 9. 伤害III + 配件槽III (原 1_9, 2_9, 3_9)
-  # 注意：此处竞技和银月是 2.0 倍，战术是 1.0 倍
-  combo_dmg3_slot3:
-    required-lore:
-      - "&c伤害 III"
-      - "&c配件槽 III"
-    lore-multiplier: 1.9
-    name-multipliers:
-      "*竞技复合弓": 1.0
-      "*银月长弓": 1.2
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.2
-      "*狩龙大弓*": 1.2
-
-  combo_dmg1:
-    required-lore:
-      - "&a伤害穿透 I"
-      - "&c伤害 III"
-    lore-multiplier: 1.5
-
-  combo_dmg2:
-    required-lore:
-      - "&e伤害穿透 II"
-      - "&c伤害 III"
-    lore-multiplier: 1.7
-
-  combo_dmg3:
-    required-lore:
-      - "&c伤害穿透 III"
-      - "&c伤害 III"
-    lore-multiplier: 1.9
-
-
-  combo_dmg4:
-    required-lore:
-      - "&a伤害穿透 I"
-      - "&e伤害 II"
-    lore-multiplier: 1.4
-
-  combo_dmg5:
-    required-lore:
-      - "&e伤害穿透 II"
-      - "&e伤害 II"
-    lore-multiplier: 1.6
-
-  combo_dmg6:
-    required-lore:
-      - "&c伤害穿透 III"
-      - "&e伤害 II"
-    lore-multiplier: 1.8
-
-  combo_dmg7:
-    required-lore:
-      - "&a伤害穿透 I"
-      - "&a伤害 I"
-    lore-multiplier: 1.3
-
-  combo_dmg8:
-    required-lore:
-      - "&e伤害穿透 II"
-      - "&a伤害 I"
-    lore-multiplier: 1.5
-
-  combo_dmg9:
-    required-lore:
-      - "&c伤害穿透 III"
-      - "&a伤害 I"
-    lore-multiplier: 1.7
-
-  # ==============================
-  # 组合系列 2: 通用模糊匹配
-  # ==============================
-
-  # 10. 任意伤害 + 任意冲击 (原 1_10, 2_10, 3_10)
-  combo_any_dmg_impact:
-    required-lore:
-      - "*伤害*"
-      - "*冲击*"
-    lore-multiplier: 1.4
-    name-multipliers:
-      "*竞技复合弓": 1.4
-      "*银月长弓": 1.4
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.4
-      "*狩龙大弓*": 1.4
-
-  # 11. 任意配件槽 + 任意冲击 (原 1_11, 2_11, 3_11)
-  combo_any_slot_impact:
-    required-lore:
-      - "*配件槽*"
-      - "*冲击*"
-    lore-multiplier: 1.5
-    name-multipliers:
-      "*竞技复合弓": 1.4
-      "*银月长弓": 1.4
-      "*战术特种弓*": 1.4
-      "*黯月长弓*": 1.4
-      "*狩龙大弓*": 1.4
-
-  # 负属性降低&f &d &4
-  fushuxing1:
-    required-lore:
-      - "*&f&o*"
+  # ==========================================
+  # 【组合 1】伤害 + 配件槽 (9种)
+  # ==========================================
+  combo_1_11:
+    required-lore: ["&a伤害 I", "&a配件槽 I"]
+    lore-multiplier: 0.2
+  combo_1_12:
+    required-lore: ["&a伤害 I", "&e配件槽 II"]
+    lore-multiplier: 0.2
+  combo_1_13:
+    required-lore: ["&a伤害 I", "&c配件槽 III"]
+    lore-multiplier: 0.4
+  combo_1_21:
+    required-lore: ["&e伤害 II", "&a配件槽 I"]
+    lore-multiplier: 0.2
+  combo_1_22:
+    required-lore: ["&e伤害 II", "&e配件槽 II"]
+    lore-multiplier: 0.3
+  combo_1_23:
+    required-lore: ["&e伤害 II", "&c配件槽 III"]
     lore-multiplier: 0.8
-
-  fushuxing2:
-    required-lore:
-      - "*&d&o*"
-    lore-multiplier: 0.7
-
-  fushuxing3:
-    required-lore:
-      - "*&4&o*"
-    lore-multiplier: 0.6
-
-
-  # ==============================
-  # 组合系列 3: 减益/修正 (A, B)
-  # ==============================
-
-  # `. 降低爱尔兰弓自带属性价值
-  combo_debuff_irish:
-    required-lore:
-      - "&e弹道稳定 II"
-      - "&c伤害穿透 III"
+  combo_1_31:
+    required-lore: ["&c伤害 III", "&a配件槽 I"]
+    lore-multiplier: 0.4
+  combo_1_32:
+    required-lore: ["&c伤害 III", "&e配件槽 II"]
+    lore-multiplier: 0.8
+  combo_1_33:
+    required-lore: ["&c伤害 III", "&c配件槽 III"]
     lore-multiplier: 1.0
-    name-multipliers:
-      "*爱尔兰*": -1.5
 
-  # 外骨骼
-  waiguge1:
-    required-lore:
-      - "&a弹射物保护 I"
-      - "&a保护 I"
+  # ==========================================
+  # 【组合 2】伤害穿透 + 伤害 (9种)[已删]
+  # ==========================================
+
+
+  # ==========================================
+  # 【组合 3】伤害穿透 + 配件槽 (9种)[已删]
+  # ==========================================
+
+
+  # ==========================================
+  # 【组合 4】伤害 + 冲击 (6种 - 冲击只有I,II)
+  # ==========================================
+  combo_4_11:
+    required-lore: ["&a伤害 I", "&c冲击 I"]
+    lore-multiplier: 0.2
+  combo_4_12:
+    required-lore: ["&a伤害 I", "&c冲击 II"]
+    lore-multiplier: 0.4
+  combo_4_21:
+    required-lore: ["&e伤害 II", "&c冲击 I"]
+    lore-multiplier: 0.25
+  combo_4_22:
+    required-lore: ["&e伤害 II", "&c冲击 II"]
+    lore-multiplier: 0.5
+  combo_4_31:
+    required-lore: ["&c伤害 III", "&c冲击 I"]
+    lore-multiplier: 0.3
+  combo_4_32:
+    required-lore: ["&c伤害 III", "&c冲击 II"]
+    lore-multiplier: 0.65
+
+  # ==========================================
+  # 【组合 5】配件槽 + 冲击 (6种)
+  # ==========================================
+  combo_5_11:
+    required-lore: ["&a配件槽 I", "&c冲击 I"]
+    lore-multiplier: 0.2
+  combo_5_12:
+    required-lore: ["&a配件槽 I", "&c冲击 II"]
+    lore-multiplier: 0.4
+  combo_5_21:
+    required-lore: ["&e配件槽 II", "&c冲击 I"]
+    lore-multiplier: 0.25
+  combo_5_22:
+    required-lore: ["&e配件槽 II", "&c冲击 II"]
+    lore-multiplier: 0.5
+  combo_5_31:
+    required-lore: ["&c配件槽 III", "&c冲击 I"]
+    lore-multiplier: 0.3
+  combo_5_32:
+    required-lore: ["&c配件槽 III", "&c冲击 II"]
+    lore-multiplier: 0.65
+
+  # ==========================================
+  # 【组合 6】伤害穿透 + 冲击 (6种)[已删]
+  # ==========================================
+
+  # ==========================================
+  # 【组合 7】弹射物保护 + 保护 (9种)
+  # ==========================================
+  combo_7_11:
+    required-lore: ["&a弹射物保护 I", "&a保护 I"]
+    lore-multiplier: 0.8
+  combo_7_12:
+    required-lore: ["&a弹射物保护 I", "&e保护 II"]
+    lore-multiplier: 1.0
+  combo_7_13:
+    required-lore: ["&a弹射物保护 I", "&c保护 III"]
     lore-multiplier: 1.2
-
-  waiguge2:
-    required-lore:
-      - "&a弹射物保护 I"
-      - "&e保护 II"
+  combo_7_21:
+    required-lore: ["&e弹射物保护 II", "&a保护 I"]
+    lore-multiplier: 1.0
+  combo_7_22:
+    required-lore: ["&e弹射物保护 II", "&e保护 II"]
     lore-multiplier: 1.3
-
-  waiguge3:
-    required-lore:
-      - "&a弹射物保护 I"
-      - "&c保护 III"
-    lore-multiplier: 1.4
-
-  waiguge4:
-    required-lore:
-      - "&e弹射物保护 II"
-      - "&a保护 I"
-    lore-multiplier: 1.3
-
-  waiguge5:
-    required-lore:
-      - "&e弹射物保护 II"
-      - "&e保护 II"
-    lore-multiplier: 1.4
-
-  waiguge6:
-    required-lore:
-      - "&e弹射物保护 II"
-      - "&c保护 III"
-    lore-multiplier: 1.5
-
-  waiguge7:
-    required-lore:
-      - "&c弹射物保护 III"
-      - "&a保护 I"
-    lore-multiplier: 1.4
-
-  waiguge8:
-    required-lore:
-      - "&c弹射物保护 III"
-      - "&e保护 II"
-    lore-multiplier: 1.5
-
-  waiguge9:
-    required-lore:
-      - "&c弹射物保护 III"
-      - "&c保护 III"
+  combo_7_23:
+    required-lore: ["&e弹射物保护 II", "&c保护 III"]
     lore-multiplier: 1.6
-
-  waiguge10:
-    required-lore:
-      - "&a抵抗 I"
-      - "&a保护 I"
-    lore-multiplier: 1.1
-
-  waiguge11:
-    required-lore:
-      - "&e抵抗 II"
-      - "&a保护 I"
-    lore-multiplier: 1.4
-
-  waiguge12:
-    required-lore:
-      - "&c抵抗 II"
-      - "&a保护 I"
-    lore-multiplier: 1.3
-
-  waiguge13:
-    required-lore:
-      - "&a抵抗 I"
-      - "&e保护 II"
-    lore-multiplier: 1.3
-
-  waiguge14:
-    required-lore:
-      - "&e抵抗 II"
-      - "&e保护 II"
-    lore-multiplier: 1.4
-
-  waiguge15:
-    required-lore:
-      - "&c抵抗 III"
-      - "&e保护 II"
-    lore-multiplier: 1.5
-
-  waiguge16:
-    required-lore:
-      - "&a抵抗 I"
-      - "&c保护 III"
-    lore-multiplier: 1.4
-
-  waiguge17:
-    required-lore:
-      - "&e抵抗 II"
-      - "&c保护 III"
-    lore-multiplier: 1.5
-
-  waiguge18:
-    required-lore:
-      - "&c抵抗 III"
-      - "&c保护 III"
+  combo_7_31:
+    required-lore: ["&c弹射物保护 III", "&a保护 I"]
+    lore-multiplier: 1.2
+  combo_7_32:
+    required-lore: ["&c弹射物保护 III", "&e保护 II"]
     lore-multiplier: 1.6
+  combo_7_33:
+    required-lore: ["&c弹射物保护 III", "&c保护 III"]
+    lore-multiplier: 2.0
 
-  waiguge19:
-    required-lore:
-      - "&a抵抗 I"
-      - "&a保护 I"
-    lore-multiplier: 1.1
-
-  waiguge20:
-    required-lore:
-      - "&e抵抗 II"
-      - "&a保护 I"
-    lore-multiplier: 1.4
-
-  waiguge21:
-    required-lore:
-      - "&c抵抗 II"
-      - "&a保护 I"
+  # ==========================================
+  # 【组合 8】破甲射击 + 装备耐久 (9种)
+  # ==========================================
+  combo_8_11:
+    required-lore: ["&a破甲射击 I", "&a装备耐久 I"]
+    lore-multiplier: 0.8
+  combo_8_12:
+    required-lore: ["&a破甲射击 I", "&e装备耐久 II"]
+    lore-multiplier: 1.0
+  combo_8_13:
+    required-lore: ["&a破甲射击 I", "&c装备耐久 III"]
+    lore-multiplier: 1.2
+  combo_8_21:
+    required-lore: ["&e破甲射击 II", "&a装备耐久 I"]
+    lore-multiplier: 1.0
+  combo_8_22:
+    required-lore: ["&e破甲射击 II", "&e装备耐久 II"]
     lore-multiplier: 1.3
-
-  waiguge22:
-    required-lore:
-      - "&a抵抗 I"
-      - "&e保护 II"
-    lore-multiplier: 1.3
-
-  waiguge23:
-    required-lore:
-      - "&e抵抗 II"
-      - "&e保护 II"
-    lore-multiplier: 1.4
-
-  waiguge24:
-    required-lore:
-      - "&c抵抗 III"
-      - "&e保护 II"
-    lore-multiplier: 1.5
-
-  waiguge25:
-    required-lore:
-      - "&a抵抗 I"
-      - "&c保护 III"
-    lore-multiplier: 1.4
-
-  waiguge26:
-    required-lore:
-      - "&e抵抗 II"
-      - "&c保护 III"
-    lore-multiplier: 1.5
-
-  waiguge27:
-    required-lore:
-      - "&c抵抗 III"
-      - "&c保护 III"
+  combo_8_23:
+    required-lore: ["&e破甲射击 II", "&c装备耐久 III"]
     lore-multiplier: 1.6
-
-  waiguge28:
-    required-lore:
-      - "&a装备耐久 I"
-      - "&a破甲射击 I"
-    lore-multiplier: 1.1
-
-  waiguge29:
-    required-lore:
-      - "&e装备耐久 II"
-      - "&a破甲射击 I"
-    lore-multiplier: 1.4
-
-  waiguge30:
-    required-lore:
-      - "&c装备耐久 II"
-      - "&a破甲射击 I"
-    lore-multiplier: 1.3
-
-  waiguge31:
-    required-lore:
-      - "&a装备耐久 I"
-      - "&e破甲射击 II"
-    lore-multiplier: 1.3
-
-  waiguge32:
-    required-lore:
-      - "&e装备耐久 II"
-      - "&e破甲射击 II"
-    lore-multiplier: 1.4
-
-  waiguge33:
-    required-lore:
-      - "&c装备耐久 III"
-      - "&e破甲射击 II"
-    lore-multiplier: 1.5
-
-  waiguge34:
-    required-lore:
-      - "&a装备耐久 I"
-      - "&c破甲射击 III"
-    lore-multiplier: 1.4
-
-  waiguge35:
-    required-lore:
-      - "&e装备耐久 II"
-      - "&c破甲射击 III"
-    lore-multiplier: 1.5
-
-  waiguge36:
-    required-lore:
-      - "&c装备耐久 III"
-      - "&c破甲射击 III"
+  combo_8_31:
+    required-lore: ["&c破甲射击 III", "&a装备耐久 I"]
+    lore-multiplier: 1.2
+  combo_8_32:
+    required-lore: ["&c破甲射击 III", "&e装备耐久 II"]
     lore-multiplier: 1.6
+  combo_8_33:
+    required-lore: ["&c破甲射击 III", "&c装备耐久 III"]
+    lore-multiplier: 2.0
+
+  # ==========================================
+  # 【组合 9】保护 + 装备耐久 (9种)
+  # ==========================================
+  combo_9_11:
+    required-lore: ["&a保护 I", "&a装备耐久 I"]
+    lore-multiplier: 0.8
+  combo_9_12:
+    required-lore: ["&a保护 I", "&e装备耐久 II"]
+    lore-multiplier: 1.0
+  combo_9_13:
+    required-lore: ["&a保护 I", "&c装备耐久 III"]
+    lore-multiplier: 1.2
+  combo_9_21:
+    required-lore: ["&e保护 II", "&a装备耐久 I"]
+    lore-multiplier: 1.0
+  combo_9_22:
+    required-lore: ["&e保护 II", "&e装备耐久 II"]
+    lore-multiplier: 1.3
+  combo_9_23:
+    required-lore: ["&e保护 II", "&c装备耐久 III"]
+    lore-multiplier: 1.6
+  combo_9_31:
+    required-lore: ["&c保护 III", "&a装备耐久 I"]
+    lore-multiplier: 1.2
+  combo_9_32:
+    required-lore: ["&c保护 III", "&e装备耐久 II"]
+    lore-multiplier: 1.6
+  combo_9_33:
+    required-lore: ["&c保护 III", "&c装备耐久 III"]
+    lore-multiplier: 2.0
+
+  # ==========================================
+  # 【组合 10】战斗保护 + 保护 (9种)
+  # ==========================================
+  combo_10_11:
+    required-lore: ["&a战斗保护 I", "&a保护 I"]
+    lore-multiplier: 0.8
+  combo_10_12:
+    required-lore: ["&a战斗保护 I", "&e保护 II"]
+    lore-multiplier: 1.0
+  combo_10_13:
+    required-lore: ["&a战斗保护 I", "&c保护 III"]
+    lore-multiplier: 1.2
+  combo_10_21:
+    required-lore: ["&e战斗保护 II", "&a保护 I"]
+    lore-multiplier: 1.0
+  combo_10_22:
+    required-lore: ["&e战斗保护 II", "&e保护 II"]
+    lore-multiplier: 1.3
+  combo_10_23:
+    required-lore: ["&e战斗保护 II", "&c保护 III"]
+    lore-multiplier: 1.6
+  combo_10_31:
+    required-lore: ["&c战斗保护 III", "&a保护 I"]
+    lore-multiplier: 1.2
+  combo_10_32:
+    required-lore: ["&c战斗保护 III", "&e保护 II"]
+    lore-multiplier: 1.6
+  combo_10_33:
+    required-lore: ["&c战斗保护 III", "&c保护 III"]
+    lore-multiplier: 2.0
+
+  # ==========================================
+  # 【组合 11】战斗保护 + 装备耐久 (9种)
+  # ==========================================
+  combo_11_11:
+    required-lore: ["&a战斗保护 I", "&a装备耐久 I"]
+    lore-multiplier: 0.8
+  combo_11_12:
+    required-lore: ["&a战斗保护 I", "&e装备耐久 II"]
+    lore-multiplier: 1.0
+  combo_11_13:
+    required-lore: ["&a战斗保护 I", "&c装备耐久 III"]
+    lore-multiplier: 1.2
+  combo_11_21:
+    required-lore: ["&e战斗保护 II", "&a装备耐久 I"]
+    lore-multiplier: 1.0
+  combo_11_22:
+    required-lore: ["&e战斗保护 II", "&e装备耐久 II"]
+    lore-multiplier: 1.3
+  combo_11_23:
+    required-lore: ["&e战斗保护 II", "&c装备耐久 III"]
+    lore-multiplier: 1.6
+  combo_11_31:
+    required-lore: ["&c战斗保护 III", "&a装备耐久 I"]
+    lore-multiplier: 1.2
+  combo_11_32:
+    required-lore: ["&c战斗保护 III", "&e装备耐久 II"]
+    lore-multiplier: 1.6
+  combo_11_33:
+    required-lore: ["&c战斗保护 III", "&c装备耐久 III"]
+    lore-multiplier: 2.0
+
+  # ==========================================
+  # 【组合 12】抵抗 + 装备耐久 (9种)
+  # ==========================================
+  combo_12_11:
+    required-lore: ["&a抵抗 I", "&a装备耐久 I"]
+    lore-multiplier: 0.8
+  combo_12_12:
+    required-lore: ["&a抵抗 I", "&e装备耐久 II"]
+    lore-multiplier: 1.0
+  combo_12_13:
+    required-lore: ["&a抵抗 I", "&c装备耐久 III"]
+    lore-multiplier: 1.2
+  combo_12_21:
+    required-lore: ["&e抵抗 II", "&a装备耐久 I"]
+    lore-multiplier: 1.0
+  combo_12_22:
+    required-lore: ["&e抵抗 II", "&e装备耐久 II"]
+    lore-multiplier: 1.3
+  combo_12_23:
+    required-lore: ["&e抵抗 II", "&c装备耐久 III"]
+    lore-multiplier: 1.6
+  combo_12_31:
+    required-lore: ["&c抵抗 III", "&a装备耐久 I"]
+    lore-multiplier: 1.2
+  combo_12_32:
+    required-lore: ["&c抵抗 III", "&e装备耐久 II"]
+    lore-multiplier: 1.6
+  combo_12_33:
+    required-lore: ["&c抵抗 III", "&c装备耐久 III"]
+    lore-multiplier: 2.0
+
+  # ==========================================
+  # 【组合 13】保护 + 抵抗 (9种)
+  # ==========================================
+  combo_13_11:
+    required-lore: ["&a保护 I", "&a抵抗 I"]
+    lore-multiplier: 0.8
+  combo_13_12:
+    required-lore: ["&a保护 I", "&e抵抗 II"]
+    lore-multiplier: 1.0
+  combo_13_13:
+    required-lore: ["&a保护 I", "&c抵抗 III"]
+    lore-multiplier: 1.2
+  combo_13_21:
+    required-lore: ["&e保护 II", "&a抵抗 I"]
+    lore-multiplier: 1.0
+  combo_13_22:
+    required-lore: ["&e保护 II", "&e抵抗 II"]
+    lore-multiplier: 1.3
+  combo_13_23:
+    required-lore: ["&e保护 II", "&c抵抗 III"]
+    lore-multiplier: 1.6
+  combo_13_31:
+    required-lore: ["&c保护 III", "&a抵抗 I"]
+    lore-multiplier: 1.2
+  combo_13_32:
+    required-lore: ["&c保护 III", "&e抵抗 II"]
+    lore-multiplier: 1.6
+  combo_13_33:
+    required-lore: ["&c保护 III", "&c抵抗 III"]
+    lore-multiplier: 2.0
