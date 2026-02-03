@@ -79,9 +79,9 @@ prices:
   name:
     "*竞技复合弓": 500
     "*银月长弓": 1000
-    "*战术特种弓": 1000
-    "*黯月长弓": 1000
-    "*狩龙大弓": 1000
+    "*战术特种弓": 1200
+    "*黯月长弓": 1200
+    "*狩龙大弓": 1200
     "*末影珍珠": 500
     "*生命图腾": 1000
     "*钻石头盔": 800
@@ -131,16 +131,16 @@ combinations:
         multiplier: 1.0
         value: 0
       "*银月长弓*":
-        multiplier: 1.0
+        multiplier: 1.1
         value: 0
       "*战术特种弓*":
-        multiplier: 1.0
+        multiplier: 1.15
         value: 0
       "*黯月长弓*":
-        multiplier: 1.0
+        multiplier: 1.15
         value: 0
       "*狩龙大弓*":
-        multiplier: 1.0
+        multiplier: 1.15
         value: 0
       "*模块*":
         multiplier: 1.2
