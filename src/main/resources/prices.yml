@@ -74,19 +74,19 @@ prices:
 
 
   name:
-    "*竞技复合弓": 600
-    "*银月长弓": 600
-    "*战术特种弓": 600
-    "*黯月长弓": 600
-    "*狩龙大弓": 600
-    "*末影珍珠":500
-    "*生命图腾":1000
-    "*钻石头盔":800
-    "*钻石胸甲":1200
-    "*钻石护腿":1000
-    "*钻石靴子":1200
-    "*再生激素注射器":500
-    "*肾上腺素":500
+    "*竞技复合弓": 500
+    "*银月长弓": 1000
+    "*战术特种弓": 1000
+    "*黯月长弓": 1000
+    "*狩龙大弓": 1000
+    "*末影珍珠": 500
+    "*生命图腾": 1000
+    "*钻石头盔": 800
+    "*钻石胸甲": 1200
+    "*钻石护腿": 1000
+    "*钻石靴子": 1200
+    "*再生激素注射器": 500
+    "*肾上腺素": 500
     "*木刀": 1000
     "*下届合金头盔": 6000
     "*下届合金胸甲": 10000
@@ -109,6 +109,9 @@ prices:
     "*曲奇饼干": 50
     "*过期的肉罐头": 50
     "*强化*": 2000
+    "*模块": 800
+    "*外骨骼*": 800
+
 
 
 
@@ -122,26 +125,26 @@ combinations:
       - "*"
     name-settings:
       "*竞技复合弓*":
-        multiplier: 1.2
+        multiplier: 1.0
         value: 0
       "*银月长弓*":
-        multiplier: 1.4
+        multiplier: 1.0
         value: 0
       "*战术特种弓*":
-        multiplier: 1.6
+        multiplier: 1.0
         value: 0
       "*黯月长弓*":
-        multiplier: 1.6
+        multiplier: 1.0
         value: 0
       "*狩龙大弓*":
-        multiplier: 1.4
+        multiplier: 1.0
         value: 0
       "*模块*":
         multiplier: 1.2
-        value: 400
+        value: 0
       "*外骨骼*":
         multiplier: 1.2
-        value: 400
+        value: 0
 
   # ==========================================
   # 【组合 1】伤害 + 配件槽 (9种)
@@ -151,38 +154,178 @@ combinations:
     lore-multiplier: 0.2
   combo_1_12:
     required-lore: ["&a伤害 I", "&e配件槽 II"]
-    lore-multiplier: 0.2
+    lore-multiplier: 0.25
   combo_1_13:
     required-lore: ["&a伤害 I", "&c配件槽 III"]
     lore-multiplier: 0.4
   combo_1_21:
     required-lore: ["&e伤害 II", "&a配件槽 I"]
-    lore-multiplier: 0.2
+    lore-multiplier: 0.25
   combo_1_22:
     required-lore: ["&e伤害 II", "&e配件槽 II"]
-    lore-multiplier: 0.3
+    lore-multiplier: 0.35
   combo_1_23:
     required-lore: ["&e伤害 II", "&c配件槽 III"]
-    lore-multiplier: 0.8
+    lore-multiplier: 0.5
   combo_1_31:
     required-lore: ["&c伤害 III", "&a配件槽 I"]
     lore-multiplier: 0.4
   combo_1_32:
     required-lore: ["&c伤害 III", "&e配件槽 II"]
-    lore-multiplier: 0.8
+    lore-multiplier: 0.5
   combo_1_33:
     required-lore: ["&c伤害 III", "&c配件槽 III"]
-    lore-multiplier: 1.0
+    lore-multiplier: 0.65
 
   # ==========================================
-  # 【组合 2】伤害穿透 + 伤害 (9种)[已删]
+  # 【组合 2】伤害穿透 + 伤害 (9种)
   # ==========================================
+  combo_2_11:
+    required-lore: [ "&a伤害穿透 I", "&a伤害 I" ]
+    lore-multiplier: 0.2
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
 
+  combo_2_12:
+    required-lore: [ "&a伤害穿透 I", "&e伤害 II" ]
+    lore-multiplier: 0.25
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_2_13:
+    required-lore: [ "&a伤害穿透 I", "&c伤害 III" ]
+    lore-multiplier: 0.4
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_2_21:
+    required-lore: [ "&e伤害穿透 II", "&a伤害 I" ]
+    lore-multiplier: 0.25
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_2_22:
+    required-lore: [ "&e伤害穿透 II", "&e伤害 II" ]
+    lore-multiplier: 0.35
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_2_23:
+    required-lore: [ "&e伤害穿透 II", "&c伤害 III" ]
+    lore-multiplier: 0.5
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_2_31:
+    required-lore: [ "&c伤害穿透 III", "&a伤害 I" ]
+    lore-multiplier: 0.4
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_2_32:
+    required-lore: [ "&c伤害穿透 III", "&e伤害 II" ]
+    lore-multiplier: 0.5
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_2_33:
+    required-lore: [ "&c伤害穿透 III", "&c伤害 III" ]
+    lore-multiplier: 0.65
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
 
   # ==========================================
-  # 【组合 3】伤害穿透 + 配件槽 (9种)[已删]
+  # 【组合 3】伤害穿透 + 配件槽 (9种)
   # ==========================================
+  combo_3_11:
+    required-lore: [ "&a伤害穿透 I", "&a配件槽 I" ]
+    lore-multiplier: 0.2
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
 
+  combo_3_12:
+    required-lore: [ "&a伤害穿透 I", "&e配件槽 II" ]
+    lore-multiplier: 0.25
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_3_13:
+    required-lore: [ "&a伤害穿透 I", "&c配件槽 III" ]
+    lore-multiplier: 0.4
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_3_21:
+    required-lore: [ "&e伤害穿透 II", "&a配件槽 I" ]
+    lore-multiplier: 0.25
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_3_22:
+    required-lore: [ "&e伤害穿透 II", "&e配件槽 II" ]
+    lore-multiplier: 0.35
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_3_23:
+    required-lore: [ "&e伤害穿透 II", "&c配件槽 III" ]
+    lore-multiplier: 0.5
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_3_31:
+    required-lore: [ "&c伤害穿透 III", "&a配件槽 I" ]
+    lore-multiplier: 0.4
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_3_32:
+    required-lore: [ "&c伤害穿透 III", "&e配件槽 II" ]
+    lore-multiplier: 0.5
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+
+  combo_3_33:
+    required-lore: [ "&c伤害穿透 III", "&c配件槽 III" ]
+    lore-multiplier: 0.65
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
 
   # ==========================================
   # 【组合 4】伤害 + 冲击 (6种 - 冲击只有I,II)
@@ -192,19 +335,19 @@ combinations:
     lore-multiplier: 0.2
   combo_4_12:
     required-lore: ["&a伤害 I", "&c冲击 II"]
-    lore-multiplier: 0.4
+    lore-multiplier: 0.35
   combo_4_21:
     required-lore: ["&e伤害 II", "&c冲击 I"]
     lore-multiplier: 0.25
   combo_4_22:
     required-lore: ["&e伤害 II", "&c冲击 II"]
-    lore-multiplier: 0.5
+    lore-multiplier: 0.4
   combo_4_31:
     required-lore: ["&c伤害 III", "&c冲击 I"]
     lore-multiplier: 0.3
   combo_4_32:
     required-lore: ["&c伤害 III", "&c冲击 II"]
-    lore-multiplier: 0.65
+    lore-multiplier: 0.45
 
   # ==========================================
   # 【组合 5】配件槽 + 冲击 (6种)
@@ -214,24 +357,65 @@ combinations:
     lore-multiplier: 0.2
   combo_5_12:
     required-lore: ["&a配件槽 I", "&c冲击 II"]
-    lore-multiplier: 0.4
+    lore-multiplier: 0.35
   combo_5_21:
     required-lore: ["&e配件槽 II", "&c冲击 I"]
     lore-multiplier: 0.25
   combo_5_22:
     required-lore: ["&e配件槽 II", "&c冲击 II"]
-    lore-multiplier: 0.5
+    lore-multiplier: 0.4
   combo_5_31:
     required-lore: ["&c配件槽 III", "&c冲击 I"]
     lore-multiplier: 0.3
   combo_5_32:
     required-lore: ["&c配件槽 III", "&c冲击 II"]
-    lore-multiplier: 0.65
+    lore-multiplier: 0.45
 
   # ==========================================
   # 【组合 6】伤害穿透 + 冲击 (6种)[已删]
   # ==========================================
-
+  combo_6_11:
+    required-lore: [ "&a伤害穿透 I", "&c冲击 I" ]
+    lore-multiplier: 0.2
+    name-settings:
+      "*战术特种弓":
+        value: -1600
+        multiplier: 0.0
+    combo_6_12:
+      required-lore: [ "&a伤害穿透 I", "&c冲击 II" ]
+      lore-multiplier: 0.35
+      name-settings:
+        "*战术特种弓":
+          value: -1600
+          multiplier: 0.0
+    combo_6_21:
+      required-lore: [ "&e伤害穿透 II", "&c冲击 I" ]
+      lore-multiplier: 0.25
+      name-settings:
+        "*战术特种弓":
+          value: -1600
+          multiplier: 0.0
+    combo_6_22:
+      required-lore: [ "&e伤害穿透 II", "&c冲击 II" ]
+      lore-multiplier: 0.4
+      name-settings:
+        "*战术特种弓":
+          value: -1600
+          multiplier: 0.0
+    combo_6_31:
+      required-lore: [ "&c伤害穿透 III", "&c冲击 I" ]
+      lore-multiplier: 0.3
+      name-settings:
+        "*战术特种弓":
+          value: -1600
+          multiplier: 0.0
+    combo_6_32:
+      required-lore: [ "&c伤害穿透 III", "&c冲击 II" ]
+      lore-multiplier: 0.45
+      name-settings:
+        "*战术特种弓":
+          value: -1600
+          multiplier: 0.0
   # ==========================================
   # 【组合 7】弹射物保护 + 保护 (9种)
   # ==========================================
