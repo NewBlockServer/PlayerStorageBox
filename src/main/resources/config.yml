@@ -1,7 +1,6 @@
 # 插件前缀
 prefix: "&6NewBlock&7&o仓库 &e>> "
 
-
 # 黑名单物品 (无法放入仓库)
 blocked-materials:
   - GOLD_INGOT
@@ -9,8 +8,11 @@ blocked-materials:
   - CHEST
   - DIAMOND
   - COMPASS
+
 backup:
   # 是否开启自动备份
   enabled: true
   # 备份间隔 (分钟)
   interval: 60
+  # 最多保留几份备份 (超过此数量将删除最旧的备份)
+  max-backups: 10

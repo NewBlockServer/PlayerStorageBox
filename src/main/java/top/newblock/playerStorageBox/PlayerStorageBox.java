@@ -8,6 +8,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public final class PlayerStorageBox extends JavaPlugin {
 
@@ -81,10 +83,38 @@ public final class PlayerStorageBox extends JavaPlugin {
             String fileName = SQLiteManager.backup(this);
             if (fileName != null) {
                 getLogger().info("自动备份成功: " + fileName);
+                // 备份成功后，执行清理旧备份的逻辑
+                cleanOldBackups();
             } else {
                 getLogger().warning("自动备份失败，请检查文件权限或磁盘空间。");
             }
         }, intervalTicks, intervalTicks);
+    }
+
+    /**
+     * 清理旧备份文件，只保留配置文件中指定的份数
+     */
+    private void cleanOldBackups() {
+        int maxBackups = getConfig().getInt("backup.max-backups", 10);
+        if (maxBackups <= 0) return;
+
+        File backupDir = new File(getDataFolder(), "backups");
+        if (!backupDir.exists() || !backupDir.isDirectory()) return;
+
+        // 获取备份目录下所有的文件 (假设备份文件以 .db 结尾)
+        File[] files = backupDir.listFiles((dir, name) -> name.endsWith(".db"));
+
+        if (files != null && files.length > maxBackups) {
+            // 按修改时间从小到大排序（最旧的在前）
+            Arrays.sort(files, Comparator.comparingLong(File::lastModified));
+
+            int deleteCount = files.length - maxBackups;
+            for (int i = 0; i < deleteCount; i++) {
+                if (files[i].delete()) {
+                    getLogger().info("已清理旧备份文件: " + files[i].getName());
+                }
+            }
+        }
     }
 
     public String getLang(String key) {
