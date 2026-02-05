@@ -60,7 +60,6 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                     if (arg2 != null && isInteger(arg2)) page = Integer.parseInt(arg2);
                 }
             }
-
             storageManager.open(p, targetUUID, page);
             return true;
         }

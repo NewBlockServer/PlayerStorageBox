@@ -58,7 +58,6 @@ public class StorageManager {
             for (Map.Entry<Integer, Inventory> e : pages.entrySet()) {
                 data.put(e.getKey(), serialize(e.getValue()));
             }
-
             try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
                     "INSERT OR REPLACE INTO player_vaults(uuid, data, total_value) VALUES (?, ?, ?)")) {
                 ps.setString(1, uuid.toString());
