@@ -91,10 +91,10 @@ prices:
     "*再生激素注射器": 300
     "*肾上腺素": 300
     "*木刀": 600
-    "*下届合金头盔": 5000
-    "*下届合金胸甲": 10000
-    "*下届合金护腿": 6000
-    "*下届合金战靴": 8000
+    "*下届合金头盔": 4000
+    "*下届合金胸甲": 9000
+    "*下届合金护腿": 4000
+    "*下届合金战靴": 7000
     "*下届合金剑": 3000
     "*虚空大剑": 10000
     "&a&l幸运药水": 3000
@@ -309,24 +309,24 @@ combinations:
     lore-multiplier: 0.2
 
   combo_6_12:
-      required-lore: [ "&a伤害穿透 I", "&c冲击 II" ]
-      lore-multiplier: 0.35
+    required-lore: [ "&a伤害穿透 I", "&c冲击 II" ]
+    lore-multiplier: 0.35
 
   combo_6_21:
-      required-lore: [ "&e伤害穿透 II", "&c冲击 I" ]
-      lore-multiplier: 0.25
+    required-lore: [ "&e伤害穿透 II", "&c冲击 I" ]
+    lore-multiplier: 0.25
 
   combo_6_22:
-      required-lore: [ "&e伤害穿透 II", "&c冲击 II" ]
-      lore-multiplier: 0.4
+    required-lore: [ "&e伤害穿透 II", "&c冲击 II" ]
+    lore-multiplier: 0.4
 
   combo_6_31:
-      required-lore: [ "&c伤害穿透 III", "&c冲击 I" ]
-      lore-multiplier: 0.3
+    required-lore: [ "&c伤害穿透 III", "&c冲击 I" ]
+    lore-multiplier: 0.3
 
   combo_6_32:
-      required-lore: [ "&c伤害穿透 III", "&c冲击 II" ]
-      lore-multiplier: 0.45
+    required-lore: [ "&c伤害穿透 III", "&c冲击 II" ]
+    lore-multiplier: 0.45
 
   # ==========================================
   # 【组合 7】弹射物保护 + 保护 (9种)

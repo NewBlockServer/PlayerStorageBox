@@ -27,3 +27,6 @@ dist-ssr
 /.gradle
 /build
 /.gradle
+.gradle/8.8/checksums/checksums.lock
+.gradle/8.8/executionHistory/executionHistory.bin
+.gradle/8.8/executionHistory/executionHistory.lock
