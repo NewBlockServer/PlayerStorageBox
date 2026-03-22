@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 public class StorageManager {
@@ -24,12 +25,20 @@ public class StorageManager {
     private final PlayerStorageBox plugin;
     private final PriceCalculator priceCalculator;
     private final Gson gson = new Gson();
+
     private final Map<UUID, Map<Integer, Inventory>> activeInventories = new HashMap<>();
+    private final Set<String> dirtyKeys = ConcurrentHashMap.newKeySet();
+    private final Map<UUID, Integer> pendingSaveTasks = new HashMap<>();
+
+    // 防抖延迟：10 ticks = 500ms，在最后一次点击后 500ms 才写库
+    private static final long SAVE_DELAY_TICKS = 10L;
 
     public StorageManager(PlayerStorageBox plugin, PriceCalculator priceCalculator) {
         this.plugin = plugin;
         this.priceCalculator = priceCalculator;
     }
+
+    // ─── 值计算 ────────────────────────────────────────────────────────────────
 
     public long calculateInventoryValue(Collection<Inventory> inventories) {
         long total = 0;
@@ -43,44 +52,15 @@ public class StorageManager {
     }
 
     public long getCachedValue(UUID uuid) {
-        try (PreparedStatement ps = SQLiteManager.get().prepareStatement("SELECT total_value FROM player_vaults WHERE uuid=?")) {
+        try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
+                "SELECT total_value FROM player_vaults WHERE uuid=?")) {
             ps.setString(1, uuid.toString());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return rs.getLong("total_value");
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
-    }
-
-    public void saveToDatabase(UUID uuid, Map<Integer, Inventory> pages) {
-        try {
-            long totalValue = calculateInventoryValue(pages.values());
-            Map<Integer, String> data = new HashMap<>();
-            for (Map.Entry<Integer, Inventory> e : pages.entrySet()) {
-                data.put(e.getKey(), serialize(e.getValue()));
-            }
-            try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
-                    "INSERT OR REPLACE INTO player_vaults(uuid, data, total_value) VALUES (?, ?, ?)")) {
-                ps.setString(1, uuid.toString());
-                ps.setString(2, gson.toJson(data));
-                ps.setLong(3, totalValue);
-                ps.executeUpdate();
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    public Map<Integer, Inventory> loadFromDatabase(UUID uuid) {
-        Map<Integer, Inventory> pages = new HashMap<>();
-        try (PreparedStatement ps = SQLiteManager.get().prepareStatement("SELECT data FROM player_vaults WHERE uuid=?")) {
-            ps.setString(1, uuid.toString());
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                Map<Integer, String> map = gson.fromJson(rs.getString("data"), new TypeToken<Map<Integer, String>>() {}.getType());
-                for (Map.Entry<Integer, String> e : map.entrySet()) {
-                    pages.put(e.getKey(), deserialize(e.getValue(), uuid, e.getKey()));
-                }
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        return pages;
     }
 
     public long getTotalValue(UUID uuid) {
@@ -90,45 +70,148 @@ public class StorageManager {
         return getCachedValue(uuid);
     }
 
+    // ─── 数据库 I/O（仅在异步线程中调用）────────────────────────────────────────
+
+    private void flushDirtyAsync(UUID uuid, Map<Integer, Inventory> pages) {
+        try {
+            Map<Integer, String> data = new HashMap<>();
+            for (Map.Entry<Integer, Inventory> e : pages.entrySet()) {
+                data.put(e.getKey(), serialize(e.getValue()));
+            }
+            long totalValue = calculateInventoryValue(pages.values());
+
+            try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
+                    "INSERT OR REPLACE INTO player_vaults(uuid, data, total_value) VALUES (?, ?, ?)")) {
+                ps.setString(1, uuid.toString());
+                ps.setString(2, gson.toJson(data));
+                ps.setLong(3, totalValue);
+                ps.executeUpdate();
+            }
+
+            pages.keySet().forEach(page -> dirtyKeys.remove(uuid + ":" + page));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveAllSync() {
+        for (Map.Entry<UUID, Map<Integer, Inventory>> entry : activeInventories.entrySet()) {
+            try {
+                Map<Integer, String> data = new HashMap<>();
+                for (Map.Entry<Integer, Inventory> e : entry.getValue().entrySet()) {
+                    data.put(e.getKey(), serialize(e.getValue()));
+                }
+                long totalValue = calculateInventoryValue(entry.getValue().values());
+                try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
+                        "INSERT OR REPLACE INTO player_vaults(uuid, data, total_value) VALUES (?, ?, ?)")) {
+                    ps.setString(1, entry.getKey().toString());
+                    ps.setString(2, gson.toJson(data));
+                    ps.setLong(3, totalValue);
+                    ps.executeUpdate();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // ─── 核心公共方法 ─────────────────────────────────────────────────────────
+
+    public Map<Integer, Inventory> loadFromDatabase(UUID uuid) {
+        Map<Integer, Inventory> pages = new HashMap<>();
+        try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
+                "SELECT data FROM player_vaults WHERE uuid=?")) {
+            ps.setString(1, uuid.toString());
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Map<Integer, String> map = gson.fromJson(
+                        rs.getString("data"),
+                        new TypeToken<Map<Integer, String>>() {}.getType());
+                for (Map.Entry<Integer, String> e : map.entrySet()) {
+                    pages.put(e.getKey(), deserialize(e.getValue(), uuid, e.getKey()));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return pages;
+    }
+
     public void open(Player viewer, UUID ownerUUID, int page) {
-        Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(ownerUUID, this::loadFromDatabase);
+        Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(
+                ownerUUID, this::loadFromDatabase);
         Inventory inv = pages.get(page);
         if (inv == null) {
-            inv = Bukkit.createInventory(new StorageHolder(ownerUUID, page), 54, "§0物品箱        第" + page + "页");
+            inv = Bukkit.createInventory(
+                    new StorageHolder(ownerUUID, page), 54,
+                    "\u00a70\u7269\u54c1\u7b31        \u7b2c" + page + "\u9875");
             pages.put(page, inv);
         }
         viewer.openInventory(inv);
     }
 
+    /**
+     * 标记页面为脏，启动防抖异步保存。
+     * 仅在主线程调用（InventoryClickEvent / InventoryCloseEvent）。
+     */
     public void saveSinglePage(UUID ownerUUID, int page, Inventory inv) {
-        Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(ownerUUID, this::loadFromDatabase);
+        Map<Integer, Inventory> pages = activeInventories.computeIfAbsent(
+                ownerUUID, this::loadFromDatabase);
         pages.put(page, inv);
-        saveToDatabase(ownerUUID, pages);
+        dirtyKeys.add(ownerUUID + ":" + page);
+
+        // 取消旧的待保存任务，重新计时（防抖合并多次点击）
+        Integer oldTask = pendingSaveTasks.get(ownerUUID);
+        if (oldTask != null) {
+            Bukkit.getScheduler().cancelTask(oldTask);
+        }
+
+        final Map<Integer, Inventory> pageSnapshot = new HashMap<>(pages);
+        int taskId = Bukkit.getScheduler().runTaskLaterAsynchronously(
+                plugin,
+                () -> flushDirtyAsync(ownerUUID, pageSnapshot),
+                SAVE_DELAY_TICKS
+        ).getTaskId();
+
+        pendingSaveTasks.put(ownerUUID, taskId);
     }
 
+    /**
+     * 插件关闭时调用：取消所有防抖任务，同步写入全量数据。
+     */
     public void saveAllAndClose() {
-        for (Map.Entry<UUID, Map<Integer, Inventory>> entry : activeInventories.entrySet()) {
-            saveToDatabase(entry.getKey(), entry.getValue());
+        for (int taskId : pendingSaveTasks.values()) {
+            Bukkit.getScheduler().cancelTask(taskId);
         }
+        pendingSaveTasks.clear();
+        saveAllSync();
         activeInventories.clear();
     }
+
+    // ─── 序列化 ───────────────────────────────────────────────────────────────
 
     private String serialize(Inventory inv) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BukkitObjectOutputStream out = new BukkitObjectOutputStream(baos);
         out.writeInt(inv.getSize());
         for (int i = 0; i < inv.getSize(); i++) out.writeObject(inv.getItem(i));
-        out.close(); return Base64.getEncoder().encodeToString(baos.toByteArray());
+        out.close();
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 
     private Inventory deserialize(String base64, UUID owner, int page) throws Exception {
         byte[] bytes = Base64.getDecoder().decode(base64.replaceAll("\\s", ""));
         BukkitObjectInputStream in = new BukkitObjectInputStream(new ByteArrayInputStream(bytes));
         int size = in.readInt();
-        Inventory inv = Bukkit.createInventory(new StorageHolder(owner, page), size, "§0物品箱        第" + page + "页");
+        Inventory inv = Bukkit.createInventory(
+                new StorageHolder(owner, page), size,
+                "\u00a70\u7269\u54c1\u7b31        \u7b2c" + page + "\u9875");
         for (int i = 0; i < size; i++) inv.setItem(i, (ItemStack) in.readObject());
-        in.close(); return inv;
+        in.close();
+        return inv;
     }
+
+    // ─── 工具 ─────────────────────────────────────────────────────────────────
 
     private boolean isMatch(String text, String pattern) {
         if (text == null) return false;
@@ -137,15 +220,20 @@ public class StorageManager {
         return text.matches(regex);
     }
 
+    // ─── 批量操作（在管理命令的 async 上下文中调用）──────────────────────────────
+
     public int bulkReplace(String mode, String oldText, String newText) throws Exception {
         String oldTarget = ChatColor.translateAlternateColorCodes('&', oldText);
         String newTarget = ChatColor.translateAlternateColorCodes('&', newText);
         int count = 0;
-        try (PreparedStatement ps = SQLiteManager.get().prepareStatement("SELECT uuid, data FROM player_vaults")) {
+        try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
+                "SELECT uuid, data FROM player_vaults")) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 UUID uuid = UUID.fromString(rs.getString("uuid"));
-                Map<Integer, String> pageData = gson.fromJson(rs.getString("data"), new TypeToken<Map<Integer, String>>() {}.getType());
+                Map<Integer, String> pageData = gson.fromJson(
+                        rs.getString("data"),
+                        new TypeToken<Map<Integer, String>>() {}.getType());
                 boolean modified = false;
                 List<Inventory> currentVaultItems = new ArrayList<>();
                 for (Map.Entry<Integer, String> entry : pageData.entrySet()) {
@@ -156,22 +244,38 @@ public class StorageManager {
                         ItemMeta meta = item.getItemMeta();
                         if (mode.equalsIgnoreCase("name")) {
                             if (meta.hasDisplayName() && isMatch(meta.getDisplayName(), oldTarget)) {
-                                meta.setDisplayName(newTarget); item.setItemMeta(meta); pageModified = true; count++;
+                                meta.setDisplayName(newTarget);
+                                item.setItemMeta(meta);
+                                pageModified = true;
+                                count++;
                             }
                         } else if (mode.equalsIgnoreCase("lore") && meta.hasLore()) {
-                            List<String> lore = meta.getLore(); boolean loreChanged = false;
+                            List<String> lore = meta.getLore();
+                            boolean loreChanged = false;
                             for (int i = 0; i < lore.size(); i++) {
-                                if (isMatch(lore.get(i), oldTarget)) { lore.set(i, newTarget); loreChanged = true; count++; }
+                                if (isMatch(lore.get(i), oldTarget)) {
+                                    lore.set(i, newTarget);
+                                    loreChanged = true;
+                                    count++;
+                                }
                             }
-                            if (loreChanged) { meta.setLore(lore); item.setItemMeta(meta); pageModified = true; }
+                            if (loreChanged) {
+                                meta.setLore(lore);
+                                item.setItemMeta(meta);
+                                pageModified = true;
+                            }
                         }
                     }
-                    if (pageModified) { entry.setValue(serialize(inv)); modified = true; }
+                    if (pageModified) {
+                        entry.setValue(serialize(inv));
+                        modified = true;
+                    }
                     currentVaultItems.add(inv);
                 }
                 if (modified) {
                     long newValue = calculateInventoryValue(currentVaultItems);
-                    try (PreparedStatement ups = SQLiteManager.get().prepareStatement("UPDATE player_vaults SET data=?, total_value=? WHERE uuid=?")) {
+                    try (PreparedStatement ups = SQLiteManager.get().prepareStatement(
+                            "UPDATE player_vaults SET data=?, total_value=? WHERE uuid=?")) {
                         ups.setString(1, gson.toJson(pageData));
                         ups.setLong(2, newValue);
                         ups.setString(3, uuid.toString());
@@ -186,11 +290,14 @@ public class StorageManager {
     public int bulkDelete(String mode, String targetText) throws Exception {
         String target = ChatColor.translateAlternateColorCodes('&', targetText);
         int count = 0;
-        try (PreparedStatement ps = SQLiteManager.get().prepareStatement("SELECT uuid, data FROM player_vaults")) {
+        try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
+                "SELECT uuid, data FROM player_vaults")) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 UUID uuid = UUID.fromString(rs.getString("uuid"));
-                Map<Integer, String> pageData = gson.fromJson(rs.getString("data"), new TypeToken<Map<Integer, String>>() {}.getType());
+                Map<Integer, String> pageData = gson.fromJson(
+                        rs.getString("data"),
+                        new TypeToken<Map<Integer, String>>() {}.getType());
                 boolean modified = false;
                 List<Inventory> currentVaultItems = new ArrayList<>();
                 for (Map.Entry<Integer, String> entry : pageData.entrySet()) {
@@ -203,18 +310,32 @@ public class StorageManager {
                         ItemMeta meta = item.getItemMeta();
                         boolean shouldDelete = false;
                         if (mode.equalsIgnoreCase("name")) {
-                            if (meta.hasDisplayName() && isMatch(meta.getDisplayName(), target)) shouldDelete = true;
+                            if (meta.hasDisplayName() && isMatch(meta.getDisplayName(), target))
+                                shouldDelete = true;
                         } else if (mode.equalsIgnoreCase("lore") && meta.hasLore()) {
-                            for (String line : meta.getLore()) { if (isMatch(line, target)) { shouldDelete = true; break; } }
+                            for (String line : meta.getLore()) {
+                                if (isMatch(line, target)) {
+                                    shouldDelete = true;
+                                    break;
+                                }
+                            }
                         }
-                        if (shouldDelete) { inv.setItem(i, null); pageModified = true; count++; }
+                        if (shouldDelete) {
+                            inv.setItem(i, null);
+                            pageModified = true;
+                            count++;
+                        }
                     }
-                    if (pageModified) { entry.setValue(serialize(inv)); modified = true; }
+                    if (pageModified) {
+                        entry.setValue(serialize(inv));
+                        modified = true;
+                    }
                     currentVaultItems.add(inv);
                 }
                 if (modified) {
                     long newValue = calculateInventoryValue(currentVaultItems);
-                    try (PreparedStatement ups = SQLiteManager.get().prepareStatement("UPDATE player_vaults SET data=?, total_value=? WHERE uuid=?")) {
+                    try (PreparedStatement ups = SQLiteManager.get().prepareStatement(
+                            "UPDATE player_vaults SET data=?, total_value=? WHERE uuid=?")) {
                         ups.setString(1, gson.toJson(pageData));
                         ups.setLong(2, newValue);
                         ups.setString(3, uuid.toString());
@@ -229,22 +350,28 @@ public class StorageManager {
     public List<SearchResult> searchItems(String type, String keyword) {
         List<SearchResult> results = new ArrayList<>();
         String query = ChatColor.translateAlternateColorCodes('&', keyword).toLowerCase();
-        try (PreparedStatement ps = SQLiteManager.get().prepareStatement("SELECT uuid, data FROM player_vaults")) {
+        try (PreparedStatement ps = SQLiteManager.get().prepareStatement(
+                "SELECT uuid, data FROM player_vaults")) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 UUID uuid = UUID.fromString(rs.getString("uuid"));
-                Map<Integer, String> pageData = gson.fromJson(rs.getString("data"), new TypeToken<Map<Integer, String>>() {}.getType());
+                Map<Integer, String> pageData = gson.fromJson(
+                        rs.getString("data"),
+                        new TypeToken<Map<Integer, String>>() {}.getType());
                 for (Map.Entry<Integer, String> entry : pageData.entrySet()) {
                     try {
                         Inventory inv = deserialize(entry.getValue(), uuid, entry.getKey());
                         for (ItemStack item : inv.getContents()) {
                             if (item == null || item.getType() == Material.AIR) continue;
-                            if (checkMatch(item, type, query)) results.add(new SearchResult(uuid, entry.getKey(), item.clone()));
+                            if (checkMatch(item, type, query))
+                                results.add(new SearchResult(uuid, entry.getKey(), item.clone()));
                         }
                     } catch (Exception ignored) {}
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return results;
     }
 

@@ -24,7 +24,15 @@ public class SQLiteManager {
             try { Class.forName("org.sqlite.JDBC"); } catch (ClassNotFoundException ignored) {}
 
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
+
             try (Statement st = connection.createStatement()) {
+                // 开启 WAL 模式：大幅减少写锁竞争，提升并发写性能
+                st.execute("PRAGMA journal_mode=WAL");
+                // 异步同步：不在每次写入后等待磁盘 fsync，大幅提升写速度
+                st.execute("PRAGMA synchronous=NORMAL");
+                // 适当增大缓存
+                st.execute("PRAGMA cache_size=8000");
+
                 st.executeUpdate("CREATE TABLE IF NOT EXISTS player_vaults (uuid TEXT PRIMARY KEY, data TEXT NOT NULL)");
                 updateSchema(st);
             }
