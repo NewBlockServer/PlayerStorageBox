@@ -67,5 +67,16 @@ public class SQLiteManager {
     }
 
     public static Connection get() { return connection; }
-    public static void close() { try { if (connection != null && !connection.isClosed()) connection.close(); } catch (Exception ignored) {} }
+    // SQLiteManager.java close() 方法
+    public static void close() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                // 正常关闭前强制 checkpoint，把 WAL 合并进主库
+                try (Statement st = connection.createStatement()) {
+                    st.execute("PRAGMA wal_checkpoint(TRUNCATE)");
+                }
+                connection.close();
+            }
+        } catch (Exception ignored) {}
+    }
 }
