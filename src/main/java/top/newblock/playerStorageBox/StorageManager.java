@@ -144,7 +144,7 @@ public class StorageManager {
         if (inv == null) {
             inv = Bukkit.createInventory(
                     new StorageHolder(ownerUUID, page), 54,
-                    "\u00a70\u7269\u54c1\u7b31        \u7b2c" + page + "\u9875");
+                    "§0物品箱        第" + page + "页");
             pages.put(page, inv);
         }
         viewer.openInventory(inv);
@@ -205,7 +205,7 @@ public class StorageManager {
         int size = in.readInt();
         Inventory inv = Bukkit.createInventory(
                 new StorageHolder(owner, page), size,
-                "\u00a70\u7269\u54c1\u7b31        \u7b2c" + page + "\u9875");
+                "§0物品箱        第" + page + "页");
         for (int i = 0; i < size; i++) inv.setItem(i, (ItemStack) in.readObject());
         in.close();
         return inv;
