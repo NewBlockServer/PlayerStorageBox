@@ -9,5 +9,11 @@ commands:
     usage: /psb [玩家名] [页码]
 permissions:
   playerstoragebox.admin:
-    description: 允许查看和操作他人的物品箱
+    description: 允许查看和操作他人的物品箱，绕过所有页面限制
     default: op
+  playerstoragebox.vip:
+    description: 允许使用第 3 页仓库（VIP 付费页）
+    default: false
+  playerstoragebox.mvp:
+    description: 允许使用第 4-9 页仓库（MVP 付费页）
+    default: false

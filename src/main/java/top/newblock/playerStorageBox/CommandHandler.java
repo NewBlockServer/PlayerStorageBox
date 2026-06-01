@@ -60,6 +60,16 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                     if (arg2 != null && isInteger(arg2)) page = Integer.parseInt(arg2);
                 }
             }
+
+            // 检查最大页数限制（管理员绕过）
+            if (!isAdmin) {
+                int maxPage = getMaxPageForPlayer(p);
+                if (page > maxPage) {
+                    p.sendMessage(plugin.getLang("page-max-reached").replace("{max}", String.valueOf(maxPage)));
+                    return true;
+                }
+            }
+
             storageManager.open(p, targetUUID, page);
             return true;
         }
@@ -137,6 +147,28 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
     private void runAsync(CommandSender sender, Runnable r) {
         new BukkitRunnable() { @Override public void run() { r.run(); } }.runTaskAsynchronously(plugin);
+    }
+
+    /**
+     * 根据玩家拥有的权限，读取配置中 pages.max-pages 获取最大可打开页数
+     */
+    private int getMaxPageForPlayer(Player player) {
+        var maxPages = plugin.getConfig().getConfigurationSection("pages.max-pages");
+        int max = plugin.getConfig().getInt("pages.free-pages", 2);
+
+        if (maxPages != null) {
+            // 先取 default 值
+            max = maxPages.getInt("default", max);
+            // 再遍历权限节点，取最大的匹配值
+            for (String key : maxPages.getKeys(false)) {
+                if (key.equals("default")) continue;
+                if (player.hasPermission(key)) {
+                    int pageLimit = maxPages.getInt(key);
+                    if (pageLimit > max) max = pageLimit;
+                }
+            }
+        }
+        return max;
     }
 
     private String[] parseArgs(String label, String[] args) {

@@ -9,6 +9,27 @@ blocked-materials:
   - DIAMOND
   - COMPASS
 
+# ─── 仓库页面设置 ────────────────────────────────────────────────────────────────
+pages:
+  # 免费开放的页数（所有玩家默认可用第 1 页到第 free-pages 页）
+  free-pages: 2
+
+  # 最大开放页数（按权限节点匹配，从上到下优先使用第一个匹配的）
+  # 玩家打开仓库时，超过其最大页数会被拒绝
+  # default 表示没有任何付费权限时的默认最大页数
+  max-pages:
+    default: 2
+    "playerstoragebox.vip": 3
+    "playerstoragebox.mvp": 5
+
+  # 付费页权限要求（页号 -> 需要的权限节点）
+  # 控制哪些页面需要特定权限才能放入物品
+  # playerstoragebox.admin 自动绕过所有限制
+  paid-pages:
+    3: "playerstoragebox.vip"
+    4: "playerstoragebox.mvp"
+    5: "playerstoragebox.mvp"
+
 backup:
   # 是否开启自动备份
   enabled: true

@@ -61,16 +61,17 @@ public class StorageListener implements Listener {
         if (event.getClickedInventory() != null && event.getClickedInventory().equals(player.getInventory())) {
             int page = holder.getPage();
 
-            if (page >= 3) {
-                if (page == 3 && !player.hasPermission("group.vip") && !player.hasPermission("group.mvp")
-                        && !player.hasPermission("playerstoragebox.admin")) {
-                    player.sendMessage(plugin.getLang("vip-required"));
-                    return;
-                }
-                if (page >= 4 && !player.hasPermission("group.mvp")
-                        && !player.hasPermission("playerstoragebox.admin")) {
-                    player.sendMessage(plugin.getLang("mvp-required").replace("{page}", String.valueOf(page)));
-                    return;
+            // 检查付费页权限（从配置读取，管理员自动绕过）
+            if (!player.hasPermission("playerstoragebox.admin")) {
+                var paidPages = plugin.getConfig().getConfigurationSection("pages.paid-pages");
+                if (paidPages != null) {
+                    String requiredPerm = paidPages.getString(String.valueOf(page));
+                    if (requiredPerm != null && !player.hasPermission(requiredPerm)) {
+                        player.sendMessage(plugin.getLang("page-paid-required")
+                                .replace("{page}", String.valueOf(page))
+                                .replace("{permission}", requiredPerm));
+                        return;
+                    }
                 }
             }
 
